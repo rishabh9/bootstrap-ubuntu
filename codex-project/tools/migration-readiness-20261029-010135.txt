@@ -1,0 +1,545 @@
+
+===== Scope =====
+2026-10-29T01:01:35+00:00
+No migration performed. Review paths, network addresses and identifiers before sharing.
+
+===== Current storage identity and health =====
+
+$ lsblk -e 7 -o NAME\,PATH\,SIZE\,MODEL\,SERIAL\,TYPE\,FSTYPE\,UUID\,MOUNTPOINTS
+NAME           PATH                    SIZE MODEL          SERIAL       TYPE  FSTYPE      UUID                                 MOUNTPOINTS
+nvme1n1        /dev/nvme1n1            1.8T CT2000P510SSD8 REPLACE_P510_SERIAL disk
+`-nvme1n1p1    /dev/nvme1n1p1          1.8T                             part  crypto_LUKS REPLACE_UUID_03
+  `-cryptincus /dev/mapper/cryptincus  1.8T                             crypt btrfs       REPLACE_UUID_05 /var/lib/incus/storage-pools/incus-pool
+nvme0n1        /dev/nvme0n1            1.8T CT2000P310SSD8 REPLACE_P310_SERIAL disk
+|-nvme0n1p1    /dev/nvme0n1p1            1G                             part  vfat        REPLACE_ESP_UUID                            /boot/efi
+`-nvme0n1p2    /dev/nvme0n1p2          1.8T                             part  crypto_LUKS REPLACE_UUID_02
+  `-cryptroot  /dev/mapper/cryptroot   1.8T                             crypt btrfs       REPLACE_UUID_04 /var/log
+                                                                                                                               /var/cache/apt
+                                                                                                                               /swap
+                                                                                                                               /home
+                                                                                                                               /
+
+$ df -hT / /boot/efi /var/lib/incus/storage-pools/incus-pool
+Filesystem                                             Type   Size  Used Avail Use% Mounted on
+/dev/mapper/cryptroot                                  btrfs  1.9T  280G  1.6T  16% /
+/dev/nvme0n1p1                                         vfat  1022M  202M  821M  20% /boot/efi
+/dev/disk/by-uuid/REPLACE_UUID_05 btrfs  1.9T  5.4G  1.9T   1% /var/lib/incus/storage-pools/incus-pool
+
+$ btrfs device stats /
+[/dev/mapper/cryptroot].write_io_errs    0
+[/dev/mapper/cryptroot].read_io_errs     0
+[/dev/mapper/cryptroot].flush_io_errs    0
+[/dev/mapper/cryptroot].corruption_errs  0
+[/dev/mapper/cryptroot].generation_errs  0
+
+$ btrfs device stats /var/lib/incus/storage-pools/incus-pool
+[/dev/mapper/cryptincus].write_io_errs    0
+[/dev/mapper/cryptincus].read_io_errs     0
+[/dev/mapper/cryptincus].flush_io_errs    0
+[/dev/mapper/cryptincus].corruption_errs  0
+[/dev/mapper/cryptincus].generation_errs  0
+
+$ cryptsetup status cryptroot
+/dev/mapper/cryptroot is active and is in use.
+  type:    LUKS2
+  cipher:  aes-xts-plain64
+  keysize: 512 [bits]
+  key location: keyring
+  device:  /dev/nvme0n1p2
+  sector size:  512 [bytes]
+  offset:  32768 [512-byte units] (16777216 [bytes])
+  size:    3904897024 [512-byte units] (1999307276288 [bytes])
+  mode:    read/write
+  flags:   discards
+
+$ cryptsetup status cryptincus
+/dev/mapper/cryptincus is active and is in use.
+  type:    LUKS2
+  cipher:  aes-xts-plain64
+  keysize: 512 [bits]
+  key location: keyring
+  device:  /dev/nvme1n1p1
+  sector size:  512 [bytes]
+  offset:  32768 [512-byte units] (16777216 [bytes])
+  size:    3906994176 [512-byte units] (2000381018112 [bytes])
+  mode:    read/write
+  flags:   discards
+
+$ cryptsetup luksDump /dev/disk/by-id/nvme-CT2000P310SSD8_REPLACE_P310_SERIAL-part2
+LUKS header information
+Version:       	2
+Epoch:         	3
+Metadata area: 	16384 [bytes]
+Keyslots area: 	16744448 [bytes]
+UUID:          	REPLACE_UUID_02
+Label:         	(no label)
+Subsystem:     	(no subsystem)
+Flags:       	(no flags)
+
+Data segments:
+  0: crypt
+	offset: 16777216 [bytes]
+	length: (whole device)
+	cipher: aes-xts-plain64
+	sector: 512 [bytes]
+
+Keyslots:
+  0: luks2
+	Key:        512 bits
+	Priority:   normal
+	Cipher:     aes-xts-plain64
+	Cipher key: 512 bits
+	PBKDF:      argon2id
+	Time cost:  13
+	Memory:     1048576
+	Threads:    4
+	Salt:       REDACTED_HEX_METADATA
+	            REDACTED_HEX_METADATA
+	AF stripes: 4000
+	AF hash:    sha256
+	Area offset:32768 [bytes]
+	Area length:258048 [bytes]
+	Digest ID:  0
+Tokens:
+Digests:
+  0: pbkdf2
+	Hash:       sha256
+	Iterations: 675628
+	Salt:       REDACTED_HEX_METADATA
+	            REDACTED_HEX_METADATA
+	Digest:     REDACTED_HEX_METADATA
+	            REDACTED_HEX_METADATA
+
+$ cryptsetup luksDump /dev/disk/by-id/nvme-CT2000P510SSD8_REPLACE_P510_SERIAL-part1
+LUKS header information
+Version:       	2
+Epoch:         	4
+Metadata area: 	16384 [bytes]
+Keyslots area: 	16744448 [bytes]
+UUID:          	REPLACE_UUID_03
+Label:         	(no label)
+Subsystem:     	(no subsystem)
+Flags:       	(no flags)
+
+Data segments:
+  0: crypt
+	offset: 16777216 [bytes]
+	length: (whole device)
+	cipher: aes-xts-plain64
+	sector: 512 [bytes]
+
+Keyslots:
+  0: luks2
+	Key:        512 bits
+	Priority:   normal
+	Cipher:     aes-xts-plain64
+	Cipher key: 512 bits
+	PBKDF:      argon2id
+	Time cost:  13
+	Memory:     1048576
+	Threads:    4
+	Salt:       REDACTED_HEX_METADATA
+	            REDACTED_HEX_METADATA
+	AF stripes: 4000
+	AF hash:    sha256
+	Area offset:32768 [bytes]
+	Area length:258048 [bytes]
+	Digest ID:  0
+  1: luks2
+	Key:        512 bits
+	Priority:   normal
+	Cipher:     aes-xts-plain64
+	Cipher key: 512 bits
+	PBKDF:      argon2id
+	Time cost:  13
+	Memory:     1048576
+	Threads:    4
+	Salt:       REDACTED_HEX_METADATA
+	            REDACTED_HEX_METADATA
+	AF stripes: 4000
+	AF hash:    sha256
+	Area offset:290816 [bytes]
+	Area length:258048 [bytes]
+	Digest ID:  0
+Tokens:
+Digests:
+  0: pbkdf2
+	Hash:       sha256
+	Iterations: 674759
+	Salt:       REDACTED_HEX_METADATA
+	            REDACTED_HEX_METADATA
+	Digest:     REDACTED_HEX_METADATA
+	            REDACTED_HEX_METADATA
+
+===== Kernel identities and exact boot-file matches =====
+
+$ uname -r
+7.0.0-38-generic
+
+$ file /boot/vmlinuz-7.0.0-38-generic
+/boot/vmlinuz-7.0.0-38-generic: Linux kernel x86 boot executable, bzImage, version 7.0.0-38-generic (buildd@lcy02-amd64-070) #38-Ubuntu SMP PREEMPT_DYNAMIC Fri Sep  4 REDACTED_IPV6 UTC 2026, RO-rootFS, Normal VGA, setup size 512*39, syssize 0x107f20, jump 0x26c 0x8cd88ec0fc8cd239 instruction, protocol 2.15, from protected-mode code at offset 0x2cc 0x10456ea bytes ZST compressed, relocatable, handover offset 0x1072530, legacy 64-bit entry point, can be above 4G, 32-bit EFI handoff entry point, 64-bit EFI handoff entry point, EFI kexec boot support, xloadflags bit 5, max cmdline size 2047, init_size 0x44c1000
+
+$ file /boot/vmlinuz-7.0.0-42-generic
+/boot/vmlinuz-7.0.0-42-generic: Linux kernel x86 boot executable, bzImage, version 7.0.0-42-generic (buildd@lcy02-amd64-049) #42-Ubuntu SMP PREEMPT_DYNAMIC Thu Oct 15 REDACTED_IPV6 UTC 2026, RO-rootFS, Normal VGA, setup size 512*39, syssize 0x108520, jump 0x26c 0x8cd88ec0fc8cd239 instruction, protocol 2.15, from protected-mode code at offset 0x2cc 0x104b716 bytes ZST compressed, relocatable, handover offset 0x1078570, legacy 64-bit entry point, can be above 4G, 32-bit EFI handoff entry point, 64-bit EFI handoff entry point, EFI kexec boot support, xloadflags bit 5, max cmdline size 2047, init_size 0x44c2000
+
+$ file /boot/efi/vmlinuz
+/boot/efi/vmlinuz: Linux kernel x86 boot executable, bzImage, version 7.0.0-42-generic (buildd@lcy02-amd64-049) #42-Ubuntu SMP PREEMPT_DYNAMIC Thu Oct 15 REDACTED_IPV6 UTC 2026, RO-rootFS, Normal VGA, setup size 512*39, syssize 0x108520, jump 0x26c 0x8cd88ec0fc8cd239 instruction, protocol 2.15, from protected-mode code at offset 0x2cc 0x104b716 bytes ZST compressed, relocatable, handover offset 0x1078570, legacy 64-bit entry point, can be above 4G, 32-bit EFI handoff entry point, 64-bit EFI handoff entry point, EFI kexec boot support, xloadflags bit 5, max cmdline size 2047, init_size 0x44c2000
+
+$ file /boot/efi/vmlinuz.old
+/boot/efi/vmlinuz.old: Linux kernel x86 boot executable, bzImage, version 7.0.0-38-generic (buildd@lcy02-amd64-070) #38-Ubuntu SMP PREEMPT_DYNAMIC Fri Sep  4 REDACTED_IPV6 UTC 2026, RO-rootFS, Normal VGA, setup size 512*39, syssize 0x107f20, jump 0x26c 0x8cd88ec0fc8cd239 instruction, protocol 2.15, from protected-mode code at offset 0x2cc 0x10456ea bytes ZST compressed, relocatable, handover offset 0x1072530, legacy 64-bit entry point, can be above 4G, 32-bit EFI handoff entry point, 64-bit EFI handoff entry point, EFI kexec boot support, xloadflags bit 5, max cmdline size 2047, init_size 0x44c1000
+
+$ sha256sum /boot/vmlinuz-7.0.0-38-generic
+9f55ef7253055a9cf68f8a04323c93dead2fca617386d842fbde9ca7b178b27e  /boot/vmlinuz-7.0.0-38-generic
+
+$ sha256sum /boot/vmlinuz-7.0.0-42-generic
+8656aabb7fa660c59d77dd01f9d63d7a8ee2e15a1126211ce889fa6a6db64429  /boot/vmlinuz-7.0.0-42-generic
+
+$ sha256sum /boot/initrd.img-7.0.0-38-generic
+9a61a01cc288833ce836205ae61e2180ba197c3e2f08d21f3aeee7e8bca38629  /boot/initrd.img-7.0.0-38-generic
+
+$ sha256sum /boot/initrd.img-7.0.0-42-generic
+b4f7250fb75144848e4b93ce2259c8728633d44adf761de4c037767e4e41829a  /boot/initrd.img-7.0.0-42-generic
+
+$ sha256sum /boot/efi/vmlinuz
+8656aabb7fa660c59d77dd01f9d63d7a8ee2e15a1126211ce889fa6a6db64429  /boot/efi/vmlinuz
+
+$ sha256sum /boot/efi/vmlinuz.old
+9f55ef7253055a9cf68f8a04323c93dead2fca617386d842fbde9ca7b178b27e  /boot/efi/vmlinuz.old
+
+$ sha256sum /boot/efi/initrd.img
+b4f7250fb75144848e4b93ce2259c8728633d44adf761de4c037767e4e41829a  /boot/efi/initrd.img
+
+$ sha256sum /boot/efi/initrd.img.old
+9a61a01cc288833ce836205ae61e2180ba197c3e2f08d21f3aeee7e8bca38629  /boot/efi/initrd.img.old
+
+===== Initramfs embedded module versions (filenames only) =====
+
+Archive: /boot/efi/initrd.img
+7.0.0-42-generic
+
+Archive: /boot/efi/initrd.img.old
+7.0.0-38-generic
+
+===== Incus resources (existing running daemon only) =====
+
+$ incus list --all-projects
+┌─────────┬──────┬─────────┬──────┬──────┬───────────┬───────────┐
+│ PROJECT │ NAME │  STATE  │ IPV4 │ IPV6 │   TYPE    │ SNAPSHOTS │
+├─────────┼──────┼─────────┼──────┼──────┼───────────┼───────────┤
+│ default │ rocm │ STOPPED │      │      │ CONTAINER │ 0         │
+└─────────┴──────┴─────────┴──────┴──────┴───────────┴───────────┘
+
+$ incus project list
+┌───────────────────┬────────┬──────────┬─────────────────┬─────────────────┬──────────┬───────────────┬───────────────────────┬─────────┐
+│       NAME        │ IMAGES │ PROFILES │ STORAGE VOLUMES │ STORAGE BUCKETS │ NETWORKS │ NETWORK ZONES │      DESCRIPTION      │ USED BY │
+├───────────────────┼────────┼──────────┼─────────────────┼─────────────────┼──────────┼───────────────┼───────────────────────┼─────────┤
+│ default (current) │ YES    │ YES      │ YES             │ YES             │ YES      │ YES           │ Default Incus project │ 4       │
+└───────────────────┴────────┴──────────┴─────────────────┴─────────────────┴──────────┴───────────────┴───────────────────────┴─────────┘
+
+$ incus storage show incus-pool
+config:
+  source: REPLACE_UUID_05
+  volatile.initial_source: /dev/mapper/cryptincus
+description: ""
+name: incus-pool
+driver: btrfs
+used_by:
+  - /1.0/instances/rocm
+  - /1.0/profiles/default
+  - /1.0/profiles/gpuprof
+status: Created
+locations:
+  - none
+
+$ incus storage volume list incus-pool --project default
+┌───────────┬──────┬─────────────┬──────────────┬─────────┐
+│   TYPE    │ NAME │ DESCRIPTION │ CONTENT-TYPE │ USED BY │
+├───────────┼──────┼─────────────┼──────────────┼─────────┤
+│ container │ rocm │             │ filesystem   │ 1       │
+└───────────┴──────┴─────────────┴──────────────┴─────────┘
+
+$ incus profile list --project default
+┌─────────┬───────────────────────┬─────────┐
+│  NAME   │      DESCRIPTION      │ USED BY │
+├─────────┼───────────────────────┼─────────┤
+│ default │ Default Incus profile │ 0       │
+├─────────┼───────────────────────┼─────────┤
+│ gpuprof │ Profile for GPU.      │ 1       │
+└─────────┴───────────────────────┴─────────┘
+
+$ incus profile show default --project default
+config: {}
+description: Default Incus profile
+devices:
+  eth0:
+    network: incusbr0
+    type: nic
+  gpu-1:
+    gid: "1000"
+    gputype: physical
+    pci: REDACTED_IPV6
+    type: gpu
+  root:
+    path: /
+    pool: incus-pool
+    type: disk
+name: default
+used_by: []
+project: default
+
+$ incus config device show rocm --project default
+{}
+
+$ incus network show incusbr0 --project default
+config:
+  ipv4.address: REDACTED_IPV4/24
+  ipv4.firewall: "false"
+  ipv4.nat: "true"
+  ipv6.address: REDACTED_IPV6/64
+  ipv6.firewall: "false"
+  ipv6.nat: "true"
+description: ""
+name: incusbr0
+type: bridge
+used_by:
+  - /1.0/instances/rocm
+  - /1.0/profiles/default
+  - /1.0/profiles/gpuprof
+managed: true
+status: Created
+locations:
+  - none
+project: default
+
+$ incus image list --project default
+┌───────┬─────────────┬────────┬─────────────┬──────────────┬──────┬──────┬─────────────┐
+│ ALIAS │ FINGERPRINT │ PUBLIC │ DESCRIPTION │ ARCHITECTURE │ TYPE │ SIZE │ UPLOAD DATE │
+└───────┴─────────────┴────────┴─────────────┴──────────────┴──────┴──────┴─────────────┘
+
+===== Existing inference and container services =====
+
+$ snap list
+Name                       Version                         Rev    Tracking         Publisher     Notes
+bare                       1.0                             5      latest/stable    canonical**   base
+canonical-livepatch        v11.1.0                         418    latest/stable    canonical**   -
+core22                     20260824                        2955   latest/stable    canonical**   base
+core24                     20260824                        2124   latest/stable    canonical**   base
+desktop-security-center    0+git.4adf2b9                   206    1/stable/…       canonical**   -
+distrobuilder              3.1                             2114   latest/stable    stgraber      classic
+firefox                    156.0.1-1                       8969   latest/stable/…  mozilla**     -
+firmware-updater           0+git.2d77dfe                   258    1/stable/…       canonical**   -
+gnome-42-2204              0+git.4982e7b-sdk0+git.69b626a  263    latest/stable    canonical**   -
+gnome-46-2404              0+git.b31ceab-sdk0+git.f80dd8b  168    latest/stable    canonical**   -
+gtk-common-themes          0.1-81-g442e511                 1535   latest/stable    canonical**   -
+lemonade                   1.0                             116    latest/stable    ken-vandine*  -
+lemonade-desktop           v2026.43.3                      339    latest/stable    ken-vandine*  -
+lemonade-server            v2026.43.3                      1098   latest/stable    ken-vandine*  -
+mesa-2404                  25.2.8-snap288                  1839   latest/stable    canonical**   -
+prompting-client           0+git.dd8c750                   228    1/stable/…       canonical**   -
+snapd                      2.77.1                          28254  latest/stable    canonical**   snapd
+snapd-desktop-integration  0.9                             391    latest/stable/…  canonical**   -
+spotify                    REDACTED_IPV4.g0eeebbed            99     latest/stable    spotify**     -
+thunderbird                159.0-1                         1312   latest/stable    canonical**   -
+
+$ snap services
+Service                                              Startup   Current   Notes
+canonical-livepatch.canonical-livepatchd             enabled   active    -
+firmware-updater.firmware-notifier                   enabled   -         user,timer-activated
+firmware-updater.firmware-updater-app                enabled   -         user,dbus-activated
+lemonade-server.daemon                               enabled   active    -
+mesa-2404.component-monitor                          disabled  inactive  -
+prompting-client.daemon                              enabled   -         user
+snapd-desktop-integration.snapd-desktop-integration  enabled   -         user
+
+$ systemctl list-units --all --no-pager snap.lemonade\* ollama\* podman\* docker\*
+  UNIT                                LOAD   ACTIVE   SUB       DESCRIPTION
+  podman-auto-update.service          loaded inactive dead      Podman auto-update service
+  podman-clean-transient.service      loaded inactive dead      Clean up podman transient data
+  podman-restart.service              loaded active   exited    Podman Start All Containers With Restart Policy Set To Always
+  podman.service                      loaded inactive dead      Podman API Service
+  snap.lemonade-server.daemon.service loaded active   running   Service for snap application lemonade-server.daemon
+  podman.socket                       loaded active   listening Podman API Socket
+  podman-auto-update.timer            loaded active   waiting   Podman auto-update timer
+
+Legend: LOAD   -> Reflects whether the unit definition was properly loaded.
+        ACTIVE -> The high-level unit activation state, i.e. generalization of SUB.
+        SUB    -> The low-level unit activation state, values depend on unit type.
+
+7 loaded units listed.
+To show all installed unit files use 'systemctl list-unit-files'.
+
+$ ss -lntup
+Netid State  Recv-Q Send-Q                        Local Address:Port  Peer Address:PortProcess
+udp   UNCONN 0      0                                   REDACTED_IPV4:48397      REDACTED_IPV4:*    users:(("python3",pid=116629,fd=9))
+udp   UNCONN 0      0                                   REDACTED_IPV4:53139      REDACTED_IPV4:*    users:(("lemond",pid=3468,fd=11))
+udp   UNCONN 0      0                                REDACTED_IPV4:53         REDACTED_IPV4:*    users:(("dnsmasq",pid=8474,fd=8))
+udp   UNCONN 0      0                                REDACTED_IPV4:53         REDACTED_IPV4:*    users:(("systemd-resolve",pid=849,fd=18))
+udp   UNCONN 0      0                             REDACTED_IPV4%lo:53         REDACTED_IPV4:*    users:(("systemd-resolve",pid=849,fd=16))
+udp   UNCONN 0      0                          REDACTED_IPV4%incusbr0:67         REDACTED_IPV4:*    users:(("dnsmasq",pid=8474,fd=4))
+udp   UNCONN 0      0                                REDACTED_IPV4:3702       REDACTED_IPV4:*    users:(("python3",pid=116629,fd=13))
+udp   UNCONN 0      0                           REDACTED_IPV4:3702       REDACTED_IPV4:*    users:(("python3",pid=116629,fd=11))
+udp   UNCONN 0      0                              REDACTED_IPV4:3702       REDACTED_IPV4:*    users:(("python3",pid=116629,fd=10))
+udp   UNCONN 0      0                           REDACTED_IPV4:3702       REDACTED_IPV4:*    users:(("python3",pid=116629,fd=8))
+udp   UNCONN 0      0                               REDACTED_IPV4:5353       REDACTED_IPV4:*    users:(("ChatGPT",pid=125778,fd=57))
+udp   UNCONN 0      0                                   REDACTED_IPV4:5353       REDACTED_IPV4:*    users:(("avahi-daemon",pid=2959,fd=12))
+udp   UNCONN 0      0                                   REDACTED_IPV4:35573      REDACTED_IPV4:*    users:(("python3",pid=116629,fd=12))
+udp   UNCONN 0      0                                         *:56479            *:*    users:(("python3",pid=116629,fd=15))
+udp   UNCONN 0      0                  [REDACTED_IPV6]:53            [REDACTED_IPV6]:*    users:(("dnsmasq",pid=8474,fd=10))
+udp   UNCONN 0      0      [REDACTED_IPV6]%wlp195s0:546           [REDACTED_IPV6]:*    users:(("NetworkManager",pid=3444,fd=22))
+udp   UNCONN 0      0                             [REDACTED_IPV6]%incusbr0:547           [REDACTED_IPV6]:*    users:(("dnsmasq",pid=8474,fd=6))
+udp   UNCONN 0      0      [REDACTED_IPV6]%wlp195s0:3702          [REDACTED_IPV6]:*    users:(("python3",pid=116629,fd=16))
+udp   UNCONN 0      0                        [REDACTED_IPV6]%wlp195s0:3702          [REDACTED_IPV6]:*    users:(("python3",pid=116629,fd=14))
+udp   UNCONN 0      0                                      [REDACTED_IPV6]:5353          [REDACTED_IPV6]:*    users:(("avahi-daemon",pid=2959,fd=13))
+tcp   LISTEN 0      4096                             REDACTED_IPV4:53         REDACTED_IPV4:*    users:(("systemd-resolve",pid=849,fd=19))
+tcp   LISTEN 0      4096                          REDACTED_IPV4%lo:53         REDACTED_IPV4:*    users:(("systemd-resolve",pid=849,fd=17))
+tcp   LISTEN 0      4096                              REDACTED_IPV4:8443       REDACTED_IPV4:*    users:(("incusd",pid=7011,fd=27))
+tcp   LISTEN 0      4096                              REDACTED_IPV4:9000       REDACTED_IPV4:*    users:(("lemond",pid=3468,fd=6))
+tcp   LISTEN 0      5                                 REDACTED_IPV4:13305      REDACTED_IPV4:*    users:(("lemond",pid=3468,fd=7))
+tcp   LISTEN 0      32                               REDACTED_IPV4:53         REDACTED_IPV4:*    users:(("dnsmasq",pid=8474,fd=9))
+tcp   LISTEN 0      5                                     [REDACTED_IPV6]:13305         [REDACTED_IPV6]:*    users:(("lemond",pid=3468,fd=8))
+tcp   LISTEN 0      32                 [REDACTED_IPV6]:53            [REDACTED_IPV6]:*    users:(("dnsmasq",pid=8474,fd=11))
+
+$ ls -l /run/podman/podman.sock
+srw-rw---- 1 root root 0 Oct 28 12:37 /run/podman/podman.sock
+
+$ ls -ld /var/lib/containers/storage /etc/containers/systemd
+drwxr-xr-x 1 root root  10 Jul  2 23:20 /etc/containers/systemd
+drwx------ 1 root root 238 Oct 28 12:37 /var/lib/containers/storage
+
+===== GPU tools =====
+
+$ ls -l /dev/kfd /dev/dri
+crw-rw----+ 1 root render 510, 0 Oct 28 12:37 /dev/kfd
+
+/dev/dri:
+total 0
+drwxr-xr-x  2 root root         80 Oct 28 12:37 by-path
+crw-rw----+ 1 root video  226,   1 Oct 28 12:37 card1
+crw-rw----+ 1 root render 226, 128 Oct 28 12:37 renderD128
+
+$ sh -c command\ -v\ rocminfo\;\ command\ -v\ vulkaninfo\;\ command\ -v\ ollama\;\ command\ -v\ lemonade-server\;\ command\ -v\ llama-server
+/usr/bin/rocminfo
+/usr/bin/vulkaninfo
+/snap/bin/lemonade-server
+[exit status 127]
+
+===== Invoking user's container configuration =====
+
+$ id USER
+uid=1000(USER) gid=1000(USER) groups=1000(USER),4(adm),27(sudo),44(video),992(render),989(incus),988(incus-admin),987(docker),986(nordvpn)
+
+$ loginctl show-user USER -p Linger -p State
+State=active
+Linger=no
+
+$ ls -ld /home/USER/.local/share/containers/storage /home/USER/.config/containers/systemd
+ls: cannot access '/home/USER/.config/containers/systemd': No such file or directory
+drwx------ 1 USER USER 248 Oct 14 21:03 /home/USER/.local/share/containers/storage
+[exit status 2]
+
+$ runuser -u USER -- env XDG_RUNTIME_DIR=/run/user/1000 systemctl --user list-units --all --no-pager --type=service
+  UNIT                                                             LOAD      ACTIVE   SUB     DESCRIPTION
+  at-spi-dbus-bus.service                                          loaded    active   running Accessibility services bus
+  dbus.service                                                     loaded    active   running D-Bus User Message Bus
+  dconf.service                                                    loaded    active   running User preferences database
+  dirmngr.service                                                  loaded    inactive dead    GnuPG network certificate management daemon
+  evolution-addressbook-factory.service                            loaded    active   running Evolution address book service
+* evolution-alarm-notify.service                                   not-found inactive dead    evolution-alarm-notify.service
+  evolution-calendar-factory.service                               loaded    active   running Evolution calendar service
+  evolution-source-registry.service                                loaded    active   running Evolution source registry
+  filter-chain.service                                             loaded    active   running PipeWire filter chain daemon
+  gcr-ssh-agent.service                                            loaded    active   running GCR ssh-agent wrapper
+* gnome-disk-utility-notify.service                                not-found inactive dead    gnome-disk-utility-notify.service
+  gnome-keyring-daemon.service                                     loaded    active   running GNOME Keyring daemon
+  gnome-session-manager@ubuntu.service                             loaded    active   running GNOME Session Manager (session: ubuntu)
+  gnome-session-monitor.service                                    loaded    active   running Monitor Session leader for GNOME Session
+  gnome-session-restart-dbus.service                               loaded    inactive dead    Restart DBus after GNOME Session shutdown
+  gnome-session-signal-init.service                                loaded    inactive dead    Signal initialization done to GNOME Session Manager
+* gnome-software.service                                           loaded    failed   failed  GNOME Software
+  gpg-agent.service                                                loaded    inactive dead    GnuPG cryptographic agent and passphrase cache
+  gvfs-afc-volume-monitor.service                                  loaded    active   running Virtual filesystem service - Apple File Conduit monitor
+  gvfs-daemon.service                                              loaded    active   running Virtual filesystem service
+  gvfs-goa-volume-monitor.service                                  loaded    active   running Virtual filesystem service - GNOME Online Accounts monitor
+  gvfs-gphoto2-volume-monitor.service                              loaded    active   running Virtual filesystem service - digital camera monitor
+  gvfs-metadata.service                                            loaded    active   running Virtual filesystem metadata service
+  gvfs-mtp-volume-monitor.service                                  loaded    active   running Virtual filesystem service - Media Transfer Protocol monitor
+  gvfs-udisks2-volume-monitor.service                              loaded    active   running Virtual filesystem service - disk device monitor
+  keyboxd.service                                                  loaded    inactive dead    GnuPG public key management service
+  launchpadlib-cache-clean.service                                 loaded    inactive dead    Clean up old files in the Launchpadlib cache
+  localsearch-3.service                                            loaded    active   running LocalSearch indexer
+  mpris-proxy.service                                              loaded    active   running Bluetooth mpris proxy
+  org.gnome.SettingsDaemon.A11ySettings.service                    loaded    active   running GNOME accessibility service
+  org.gnome.SettingsDaemon.Color.service                           loaded    active   running GNOME color management service
+  org.gnome.SettingsDaemon.Datetime.service                        loaded    active   running GNOME date & time service
+  org.gnome.SettingsDaemon.Housekeeping.service                    loaded    active   running GNOME maintenance of expirable data service
+  org.gnome.SettingsDaemon.Keyboard.service                        loaded    active   running GNOME keyboard configuration service
+  org.gnome.SettingsDaemon.MediaKeys.service                       loaded    active   running GNOME keyboard shortcuts service
+  org.gnome.SettingsDaemon.Power.service                           loaded    active   running GNOME power management service
+  org.gnome.SettingsDaemon.PrintNotifications.service              loaded    active   running GNOME printer notifications service
+  org.gnome.SettingsDaemon.Rfkill.service                          loaded    active   running GNOME RFKill support service
+  org.gnome.SettingsDaemon.ScreensaverProxy.service                loaded    active   running GNOME FreeDesktop screensaver service
+  org.gnome.SettingsDaemon.Sharing.service                         loaded    active   running GNOME file sharing service
+  org.gnome.SettingsDaemon.Smartcard.service                       loaded    active   running GNOME smartcard service
+  org.gnome.SettingsDaemon.Sound.service                           loaded    active   running GNOME sound sample caching service
+  org.gnome.SettingsDaemon.UsbProtection.service                   loaded    active   running GNOME USB protection service
+  org.gnome.SettingsDaemon.Wwan.service                            loaded    active   running GNOME WWan support service
+  org.gnome.SettingsDaemon.XSettings.service                       loaded    active   running GNOME XSettings service
+  org.gnome.Shell-disable-extensions.service                       loaded    inactive dead    Disable GNOME Shell extensions after failure
+  org.gnome.Shell@ubuntu.service                                   loaded    active   running GNOME Shell
+* pipewire-media-session.service                                   not-found inactive dead    pipewire-media-session.service
+  pipewire-pulse.service                                           loaded    active   running PipeWire PulseAudio
+  pipewire.service                                                 loaded    active   running PipeWire Multimedia Service
+  pk-debconf-helper.service                                        loaded    inactive dead    debconf communication service
+* pulseaudio.service                                               not-found inactive dead    pulseaudio.service
+* snap.firmware-updater.firmware-notifier.service                  loaded    failed   failed  Service for snap application firmware-updater.firmware-notifier
+  snap.prompting-client.daemon.service                             loaded    inactive dead    Service for snap application prompting-client.daemon
+  snap.snapd-desktop-integration.snapd-desktop-integration.service loaded    active   running Service for snap application snapd-desktop-integration.snapd-desktop-integration
+  snapd.session-agent.service                                      loaded    inactive dead    snapd user session agent
+  spice-vdagent.service                                            loaded    inactive dead    Spice guest session agent
+  ssh-agent.service                                                loaded    active   running OpenSSH Agent
+* systemd-remount-fs.service                                       not-found inactive dead    systemd-remount-fs.service
+* tracker-miner-fs-3.service                                       not-found inactive dead    tracker-miner-fs-3.service
+  ubuntu-insights-collect.service                                  loaded    inactive dead    "Collect platform report using Ubuntu Insights while respecting consent"
+  ubuntu-insights-upload.service                                   loaded    inactive dead    "Upload collected and matured platform reports using Ubuntu Insights while respecting consent"
+  update-notifier-crash.service                                    loaded    inactive dead    Notification regarding a crash report
+  update-notifier-release.service                                  loaded    inactive dead    Notification regarding a new release of Ubuntu
+  upgrade-restore-font.service                                     loaded    inactive dead    Restore font after upgrade
+  user-dirs-update-gtk.service                                     loaded    inactive dead    User folders update
+  user-session-migration.service                                   loaded    inactive dead    User Session Migration
+  wireplumber.service                                              loaded    active   running Multimedia Service Session Manager
+  xdg-desktop-portal-gnome.service                                 loaded    active   running Portal service (GNOME implementation)
+  xdg-desktop-portal-gtk.service                                   loaded    active   running Portal service (GTK/GNOME implementation)
+  xdg-desktop-portal-rewrite-launchers.service                     loaded    inactive dead    Rewrite dynamic launcher portal entries
+  xdg-desktop-portal.service                                       loaded    active   running Portal service
+  xdg-document-portal.service                                      loaded    active   running flatpak document portal service
+  xdg-permission-store.service                                     loaded    active   running sandboxed app permission store
+  xdg-user-dirs.service                                            loaded    inactive dead    User folders update
+
+Legend: LOAD   -> Reflects whether the unit definition was properly loaded.
+        ACTIVE -> The high-level unit activation state, i.e. generalization of SUB.
+        SUB    -> The low-level unit activation state, values depend on unit type.
+
+75 loaded units listed.
+To show all installed unit files use 'systemctl list-unit-files'.
+
+===== APT removal preview — simulation only =====
+
+$ apt-get --simulate remove incus incus-base incus-client incus-ui-canonical
+Reading package lists...
+Building dependency tree...
+Reading state information...
+Solving dependencies...
+The following packages were automatically installed and are no longer required:
+  attr gdisk genisoimage libbtrfs0t64 libfuse3-3 libgpgme11t64 libnet1 lshw
+  sshfs xdelta3
+Use 'sudo apt autoremove' to remove them.
+The following packages will be REMOVED:
+  incus incus-base incus-client incus-ui-canonical
+0 upgraded, 0 newly installed, 4 to remove and 0 not upgraded.
+Remv incus-ui-canonical [1:7.5.1-ubuntu24.04-202609271822]
+Remv incus [1:7.5.1-ubuntu24.04-202609271822]
+Remv incus-base [1:7.5.1-ubuntu24.04-202609271822]
+Remv incus-client [1:7.5.1-ubuntu24.04-202609271822]
+
+===== End =====
+No services stopped, no key contents read, no configuration changed.
