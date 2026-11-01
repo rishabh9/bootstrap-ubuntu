@@ -22,7 +22,8 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 source "$SCRIPT_DIR/00-config.sh"
 
-require_root
+require_fresh_install
+[[ ! -e /dev/mapper/$ROOT_MAPPER && ! -e /dev/mapper/$DATA_MAPPER ]] || fail "Mapper names already in use."
 
 echo ""
 echo "Current disk layout:"
@@ -32,8 +33,11 @@ echo ""
 
 # Verify neither disk is currently mounted or has open LUKS mappers.
 # Running wipefs on an active disk leaves the system in inconsistent state.
-for _disk in "$OS_DISK" "$INCUS_DISK"; do
-    if lsblk -no MOUNTPOINT "$_disk" 2>/dev/null | grep -q '[^[:space:]]'; then
+for _disk in "$OS_DISK" "$DATA_DISK"; do
+    if lsblk -nro TYPE "$_disk" | grep -E "crypt|lvm|raid" >/dev/null; then
+        fail "Selected disk has active mappings; close them before installation."
+    fi
+    if lsblk -no MOUNTPOINTS "$_disk" 2>/dev/null | grep -q '[^[:space:]]'; then
         echo "ERROR: $_disk has mounted partitions. Unmount everything and try again."
         lsblk "$_disk"
         exit 1
@@ -44,7 +48,7 @@ unset _disk
 confirm_destructive \
     "This will ERASE ALL DATA on:
     - $OS_DISK (OS disk)
-    - $INCUS_DISK (Incus disk)
+    - $DATA_DISK (data disk)
 
 Double-check the disk names above with the lsblk output."
 
@@ -52,8 +56,10 @@ Double-check the disk names above with the lsblk output."
 
 step "Wiping disk signatures"
 
+lsblk -d -o NAME,SIZE,MODEL,SERIAL "$OS_DISK" "$DATA_DISK"
+confirm_destructive "Verify both displayed serials. Both disks will be erased."
 wipefs -af "$OS_DISK"
-wipefs -af "$INCUS_DISK"
+wipefs -af "$DATA_DISK"
 
 echo "Done. Both disks wiped."
 
@@ -75,18 +81,23 @@ parted "$OS_DISK" -- mkpart cryptroot 1025MiB 100%
 echo "OS disk partitioned:"
 lsblk "$OS_DISK"
 
-# ─── Step 3: Partition the Incus disk ────────────────────────────────────────
+# ─── Step 3: Partition the data disk ────────────────────────────────────────
 
-step "Partitioning Incus disk ($INCUS_DISK)"
+step "Partitioning data disk ($DATA_DISK)"
 
 # Create GPT partition table
-parted "$INCUS_DISK" -- mklabel gpt
+parted "$DATA_DISK" -- mklabel gpt
 
 # Single partition using the entire disk
-parted "$INCUS_DISK" -- mkpart cryptincus 1MiB 100%
+parted "$DATA_DISK" -- mkpart cryptdata 1MiB 100%
 
-echo "Incus disk partitioned:"
-lsblk "$INCUS_DISK"
+echo "data disk partitioned:"
+lsblk "$DATA_DISK"
+
+partprobe "$OS_DISK"
+partprobe "$DATA_DISK"
+udevadm settle
+[[ -b $EFI_PART && -b $ROOT_PART && -b $DATA_PART ]] || fail "Partition identifiers are not ready."
 
 # ─── Step 4: Format EFI partition ────────────────────────────────────────────
 
@@ -109,25 +120,29 @@ cryptsetup open "$ROOT_PART" "$ROOT_MAPPER"
 
 echo "Root partition encrypted and opened as /dev/mapper/$ROOT_MAPPER"
 
-# ─── Step 6: Encrypt the Incus partition ─────────────────────────────────────
+# ─── Step 6: Encrypt the data partition ─────────────────────────────────────
 
-step "Encrypting Incus partition ($INCUS_PART)"
+step "Encrypting data partition ($DATA_PART)"
 
-echo "You will be asked to create a passphrase for the Incus disk."
+echo "You will be asked to create a passphrase for the data disk."
 echo ""
 echo "TIP: You can use the same passphrase as the OS disk for now."
 echo "     Later (in script 03), we will set up a keyfile so only"
 echo "     the OS disk password is needed at boot."
 echo ""
 
-cryptsetup luksFormat --type luks2 "$INCUS_PART"
-cryptsetup open "$INCUS_PART" "$INCUS_MAPPER"
+cryptsetup luksFormat --type luks2 "$DATA_PART"
+cryptsetup open "$DATA_PART" "$DATA_MAPPER"
 
-echo "Incus partition encrypted and opened as /dev/mapper/$INCUS_MAPPER"
+echo "data partition encrypted and opened as /dev/mapper/$DATA_MAPPER"
+
+udevadm settle
 
 # ─── Step 7: Create Btrfs on OS disk ────────────────────────────────────────
 
 step "Creating Btrfs filesystem on OS disk"
+
+mkfs.btrfs -f -L workstation-data /dev/mapper/"$DATA_MAPPER"
 
 mkfs.btrfs -f -L ubuntu-root /dev/mapper/"$ROOT_MAPPER"
 

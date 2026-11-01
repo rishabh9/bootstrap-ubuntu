@@ -1,65 +1,55 @@
 #!/usr/bin/env bash
-# =============================================================================
-# 00-config.sh — Shared configuration for all install scripts
-# =============================================================================
-# This file is sourced by the other scripts. Edit the variables below to match
-# your hardware. DO NOT run this file directly.
-#
-# Disks are auto-detected by model name. If detection fails, the scripts will
-# print the available devices and exit before touching anything.
-# =============================================================================
+# Sourcing configuration performs no disk probing or mutation.
+# Set explicit whole-disk /dev/disk/by-id paths before a FRESH installation.
+OS_DISK="${OS_DISK:-}"
+DATA_DISK="${DATA_DISK:-}"
+ROOT_MAPPER=cryptroot
+DATA_MAPPER=cryptdata
+TARGET="${TARGET:-/mnt}"
+UBUNTU_RELEASE=resolute
+UBUNTU_MIRROR=https://archive.ubuntu.com/ubuntu
 
-# --- Disk Assignment (auto-detected by model name) ---
-# P310 (PCIe Gen4) → OS disk   P510 (PCIe Gen5) → Incus disk
-# If your hardware differs, replace the two lines below with explicit paths,
-# e.g.:  OS_DISK="/dev/nvme1n1"   INCUS_DISK="/dev/nvme0n1"
-
-OS_DISK=$(lsblk -d -o NAME,MODEL --noheadings 2>/dev/null \
-    | awk '/P310/{print "/dev/"$1; exit}')
-INCUS_DISK=$(lsblk -d -o NAME,MODEL --noheadings 2>/dev/null \
-    | awk '/P510/{print "/dev/"$1; exit}')
-
-if [[ -z "$OS_DISK" || -z "$INCUS_DISK" ]]; then
-    echo ""
-    echo "ERROR: Could not auto-detect one or both disks."
-    echo "       Detected block devices:"
-    lsblk -d -o NAME,SIZE,MODEL
-    echo ""
-    echo "  Expected a disk with 'P310' in the model name → OS_DISK"
-    echo "  Expected a disk with 'P510' in the model name → INCUS_DISK"
-    echo "  Set these manually at the top of 00-config.sh."
-    exit 1
-fi
-
-if [[ "$OS_DISK" == "$INCUS_DISK" ]]; then
-    echo "ERROR: OS_DISK and INCUS_DISK resolved to the same device ($OS_DISK)."
-    echo "       Check the model name patterns in 00-config.sh."
-    exit 1
-fi
-
-echo "Disk auto-detection:"
-echo "  OS disk (P310):    $OS_DISK"
-echo "  Incus disk (P510): $INCUS_DISK"
-
-# --- Partition Names (derived from above, edit if your layout differs) ---
-# OS disk partitions
-EFI_PART="${OS_DISK}p1"       # EFI System Partition (1 GiB, FAT32)
-ROOT_PART="${OS_DISK}p2"      # LUKS-encrypted root (rest of disk)
-
-# Incus disk partition (single partition, entire disk)
-INCUS_PART="${INCUS_DISK}p1"
-
-# --- LUKS mapper names ---
-ROOT_MAPPER="cryptroot"
-INCUS_MAPPER="cryptincus"
-
-# --- Mount point used during installation ---
-TARGET="/mnt"
-
-# --- Ubuntu release ---
-UBUNTU_RELEASE="questing"      # Ubuntu 25.10
-UBUNTU_MIRROR="http://archive.ubuntu.com/ubuntu"
-
+fail() { echo "ERROR: $*" >&2; exit 1; }
+resolve_disks() {
+    local disk
+    for disk in "$OS_DISK" "$DATA_DISK"; do
+        [[ $disk == /dev/disk/by-id/* && $disk != *-part* && -b $disk ]] || fail 'Set OS_DISK and DATA_DISK to explicit whole-disk by-id paths.'
+        [[ $(lsblk -dnro TYPE "$disk") == disk ]] || fail 'Expected a whole disk.'
+    done
+    [[ $(readlink -f "$OS_DISK") != "$(readlink -f "$DATA_DISK")" ]] || fail 'Disks must differ.'
+    EFI_PART="${OS_DISK}-part1"
+    ROOT_PART="${OS_DISK}-part2"
+    DATA_PART="${DATA_DISK}-part1"
+}
+require_fresh_install() {
+    [[ ${FRESH_INSTALL:-} == ERASE_BOTH_DISKS ]] || fail 'Fresh-install scripts require FRESH_INSTALL=ERASE_BOTH_DISKS; NEVER run on the installed workstation.'
+    require_root
+    [[ -d /run/live || -d /run/casper || -d /cdrom/casper ]] || fail 'Expected a live USB environment.'
+    [[ $TARGET == /mnt ]] || fail 'Fresh install target must be /mnt.'
+    resolve_disks
+    local disk ancestors
+    ancestors=$(lsblk -snp -o PATH "$(findmnt -nro SOURCE / | sed 's/\[.*//')" 2>/dev/null || true)
+    for disk in "$OS_DISK" "$DATA_DISK"; do
+        [[ $ancestors != *"$(readlink -f "$disk")"* ]] || fail 'Selected disk backs running root.'
+    done
+}
+require_target() {
+    mountpoint -q "$TARGET" || fail 'Installation target is not mounted.'
+    mountpoint -q "$TARGET/boot/efi" || fail 'Target ESP is not mounted.'
+    local backing
+    backing=$(cryptsetup status "$ROOT_MAPPER" | awk '$1=="device:" {print $2}')
+    [[ $(readlink -f "$backing") == "$(readlink -f "$ROOT_PART")" ]] || fail 'Target root mapping does not match configured OS partition.'
+    backing=$(cryptsetup status "$DATA_MAPPER" | awk '$1=="device:" {print $2}')
+    [[ $(readlink -f "$backing") == "$(readlink -f "$DATA_PART")" ]] || fail 'Data mapping does not match configured data partition.'
+    [[ $(readlink -f "$(findmnt -nro SOURCE --target "$TARGET/boot/efi")") == "$(readlink -f "$EFI_PART")" ]] || fail 'Target ESP does not match configured OS partition.'
+    [[ $(findmnt -nro SOURCE --target "$TARGET") == /dev/mapper/$ROOT_MAPPER* ]] || fail 'Unexpected target source.'
+}
+verify_initramfs() {
+    local image=$1 listing
+    listing=$(lsinitramfs "$image") || fail "Cannot inspect $image"
+    [[ $listing == *cryptroot/crypttab* ]] || fail "Root unlock configuration missing: $image"
+    [[ $listing != *luks-data-keyfile* && $listing != *luks-incus-keyfile* ]] || fail "Secondary key found: $image"
+}
 # --- Btrfs subvolume names ---
 # These are the subvolumes that will be created on the OS disk.
 # Standard layout compatible with Timeshift and Snapper.
@@ -74,7 +64,7 @@ SUBVOL_SWAP="@swap"
 BTRFS_OPTS="compress=zstd:3,noatime"
 
 # --- Hostname ---
-HOSTNAME="osaka"
+HOSTNAME="workstation"
 
 # --- Timezone ---
 # Find your timezone name with: timedatectl list-timezones | grep <City>

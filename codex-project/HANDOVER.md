@@ -176,3 +176,10 @@ Lemonade/ROCm stack. A working inference prompt does not by itself prove GPU
 backend performance or offload. Data-disk-absent boot and fallback-kernel boot
 were not separately tested. The agent has not independently tested USB recovery
 from a damaged header; verification establishes decryptability and exact bytes.
+
+## Subsequent repository refresh
+
+The active bootstrap scripts and README now target Ubuntu 26.04 and encrypted
+/data with no Incus installation. See docs/ubuntu-26-refresh.md at repository root
+for validation and outstanding VM testing. The source changes have NOT been
+installed on the working workstation; its verified migration state is unchanged.
