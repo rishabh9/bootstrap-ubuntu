@@ -1,5 +1,7 @@
 # Incus Migration Implementation Plan
 
+> Historical document: migration subsequently completed. Read the final checkpoint in HANDOVER.md (at the codex-project root) before taking action. Do not rerun the migration.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Prepare a reviewable, machine-specific migration without executing it.

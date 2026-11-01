@@ -129,4 +129,50 @@ The first data-stage attempt stopped during preflight: Incus rejects combining
 `data-started` marker, deletion or formatting. The fix uses a separate local-only
 CLI array for all-project inventory and retains local/default scoping for the
 other commands. A regression test reproduced the failure before the fix; all five
-CLI tests now pass. The corrected destructive stage has not yet been retried.
+CLI tests now pass. The corrected stage subsequently completed; see the final checkpoint below.
+
+## Completed migration checkpoint — 1 November 2026
+
+This is the latest status and supersedes all earlier pending-execution statements.
+The user explicitly approved both stages and ran them on the workstation. Evidence
+below comes from pasted terminal output and user confirmations, not direct access
+by the authoring agent to the installed system.
+
+- Boot cleanup rebuilt both retained initramfs images, passed the scripted key
+  filename and early-device checks, and preserved recovery files on encrypted root.
+- The corrected data stage deleted the stopped rocm container and Incus profile
+  dependencies, bridge and pool. It recreated LUKS2 and Btrfs only on the pinned
+  P510 partition, enrolled a new key, tested both key and recovery passphrase,
+  configured post-root unlocking, and mounted /data.
+- The four expected Incus packages were removed. fstab verification reported zero
+  parse errors, zero errors, and one swapfile warning. Swap was subsequently active.
+- After reboot, kernel 7.0.0-42-generic ran successfully; /data mounted as Btrfs
+  through active LUKS2 mapper cryptdata. User confirmed only the OS passphrase was
+  requested, normal networking worked, and Lemonade answered a local-model prompt.
+- A standalone dnsmasq.service failed because port 53 was already occupied by
+  systemd-resolved. Inspection found no active custom dnsmasq configuration beyond
+  the default configuration-directory setting. The user disabled dnsmasq.service
+  and cleared its failed state. No packages were removed for this cleanup.
+  systemctl --failed then showed zero failed units, and DNS resolution succeeded.
+- The new P510 header backup remains on encrypted OS storage. The user encrypted
+  a copy with GPG/AES256 using a separately retained password and copied only the
+  encrypted file onto an ordinary USB. The first password attempt failed; a retry
+  decrypted successfully and compared exactly with the original. A second direct
+  decrypt-and-compare of the USB copy also succeeded. Do not upload the header,
+  encrypted backup, passwords, or key material into this public repository.
+
+### Resume after completion
+
+Do NOT rerun either migration stage. The old P510 header must never be restored
+onto the recreated data volume. Keep recovery files while deciding retention;
+old header/key-bearing backups remain sensitive for preserved OLD data copies.
+
+The historical reports and migration proposal remain for provenance; they are not
+current inventory. The original bootstrap scripts still describe the old design.
+Next work is to update those scripts/docs to the verified architecture, review
+Incus APT source/key and obsolete group cleanup, improve Limine update-hook
+reliability, and configure rootless Podman incrementally. Preserve the working
+Lemonade/ROCm stack. A working inference prompt does not by itself prove GPU
+backend performance or offload. Data-disk-absent boot and fallback-kernel boot
+were not separately tested. The agent has not independently tested USB recovery
+from a damaged header; verification establishes decryptability and exact bytes.

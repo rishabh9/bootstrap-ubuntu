@@ -1,5 +1,7 @@
 # AI Workstation — Codex continuation
 
+> Historical document: migration subsequently completed. Read the final checkpoint in HANDOVER.md (at the codex-project root) before taking action. Do not rerun the migration.
+
 Recovered on 28 October 2026 from the ChatGPT project AI Workstation, conversation “Compare Incus Disk Setup” (REPLACE_UUID_01).
 
 ## User-confirmed context

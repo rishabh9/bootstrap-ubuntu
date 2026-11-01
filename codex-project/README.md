@@ -1,8 +1,7 @@
 # Codex AI Workstation recovery checkpoint
 
-This folder preserves the Codex Project work through 1 November 2026, before any
-live boot cleanup or storage migration. It is a continuation snapshot, not a
-completed migration or a replacement for the historical bootstrap installer.
+This folder preserves the Codex Project work through 1 November 2026, including the completed live migration and post-reboot validation. It is a
+continuation snapshot, not a replacement for the historical bootstrap installer.
 
 **Public copy: machine identifiers are redacted.** `REPLACE_*`, `REDACTED_*`,
 `USER`, `WORKSTATION`, and generic project paths replace private values. The
@@ -12,10 +11,10 @@ reports as historical evidence rather than current machine state.
 
 ## Resume here
 
-Read `HANDOVER.md`, then `tools/MIGRATION.md`. The user has confirmed the backup,
-Ubuntu recovery USB, and OS passphrase are ready. Neither migration apply stage
-has run. The user requested this commit and PR as a recovery checkpoint before
-proceeding. Approval to publish this backup is not approval to execute migration.
+Read the final completed checkpoint in `HANDOVER.md` first. Both migration stages
+completed with user approval; post-reboot checks and the encrypted USB header
+backup comparison passed. Do not rerun migration. `tools/MIGRATION.md` and the
+reports preserve the historical procedure and observations, not current status.
 
 ## Contents
 

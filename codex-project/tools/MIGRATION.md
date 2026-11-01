@@ -1,5 +1,7 @@
 # AI Workstation migration — review copy
 
+> Historical document: migration subsequently completed. Read the final checkpoint in HANDOVER.md (at the codex-project root) before taking action. Do not rerun the migration.
+
 Prepared 1 November 2026 from the two reports collected 29 October. This is a
 machine-specific proposal, not evidence that the migration has run. The user has
 confirmed a backup, recovery USB and OS passphrase are ready. Execution still
