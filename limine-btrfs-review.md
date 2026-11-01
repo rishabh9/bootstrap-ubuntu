@@ -1,3 +1,5 @@
+> HISTORICAL REFERENCE ONLY. Superseded by README.md and the current scripts. Do not follow its old key-embedding or Incus setup instructions. RCU causal hypotheses were not verified.
+
 # Review of the ChatGPT "Ubuntu Btrfs Limine Setup" Discussion
 
 **Source:** https://chatgpt.com/share/6997895c-adfc-800b-ad36-29588fc074b8

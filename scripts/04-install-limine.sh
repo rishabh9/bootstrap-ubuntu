@@ -23,7 +23,8 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 source "$SCRIPT_DIR/00-config.sh"
 
-require_root
+require_fresh_install
+require_target
 
 # ─── Step 1: Download Limine ────────────────────────────────────────────────
 
@@ -83,204 +84,17 @@ cp "$BOOTX64" "$TARGET/boot/efi/EFI/BOOT/"
 echo "Limine UEFI binary installed."
 # Temp dir is cleaned up by the EXIT trap set during clone.
 
-# ─── Step 3: Copy kernel and initramfs to ESP ────────────────────────────────
-
-step "Copying kernel and initramfs to EFI partition"
-
-echo "Limine can only read FAT32 — the kernel and initramfs must be on the ESP."
-echo ""
-
-# Find the latest kernel version
-KERNEL_VER=$(ls "$TARGET"/boot/vmlinuz-* 2>/dev/null | sort -V | tail -1 | sed "s|$TARGET/boot/vmlinuz-||")
-if [[ -z "$KERNEL_VER" ]]; then
-    echo "ERROR: No kernel found in $TARGET/boot. Was linux-image-generic installed in script 02?"
-    exit 1
-fi
-
-echo "Latest kernel version: $KERNEL_VER"
-
-# COPY the kernel and initramfs to the ESP — current and .old slots.
-# Seeding .old with the same kernel means the "previous kernel" Limine entry
-# works from first boot. After the first kernel update, .old will diverge.
-cp "$TARGET/boot/vmlinuz-$KERNEL_VER"   "$TARGET/boot/efi/vmlinuz"
-cp "$TARGET/boot/initrd.img-$KERNEL_VER" "$TARGET/boot/efi/initrd.img"
-cp "$TARGET/boot/vmlinuz-$KERNEL_VER"   "$TARGET/boot/efi/vmlinuz.old"
-cp "$TARGET/boot/initrd.img-$KERNEL_VER" "$TARGET/boot/efi/initrd.img.old"
-
-echo "Kernel and initramfs copied to ESP (current and .old slots)."
-
-# ─── Step 4: Create limine.conf ─────────────────────────────────────────────
-
-step "Creating Limine configuration"
-
-echo "Creating limine.conf using Limine v10.x syntax..."
-echo ""
-
-cat > "$TARGET/boot/efi/limine.conf" << EOF
-# Limine bootloader configuration — v10.x syntax (key: value, NOT key=value)
-# Docs: https://codeberg.org/Limine/Limine/src/branch/v10.x/CONFIG.md
-#
-# IMPORTANT NOTES:
-# - boot():/ refers to the volume this config was loaded from (the ESP/FAT32),
-#   NOT the root filesystem
-# - The kernel and initramfs are COPIED here by the update hooks
-# - Limine CANNOT read Btrfs or LUKS — everything it needs must be on FAT32
-#
-# Two entries are kept at all times:
-#   vmlinuz / initrd.img      — the current kernel (updated by apt)
-#   vmlinuz.old / initrd.img.old — the previous kernel (rollback target)
-# If the current kernel does not boot, select "Ubuntu (previous kernel)" here.
-
-timeout: 5
-
-/Ubuntu (Encrypted Btrfs)
-    PROTOCOL: linux
-    PATH: boot():/vmlinuz
-    MODULE_PATH: boot():/initrd.img
-    CMDLINE: root=/dev/mapper/$ROOT_MAPPER rootflags=subvol=$SUBVOL_ROOT rw quiet splash
-
-/Ubuntu (previous kernel)
-    PROTOCOL: linux
-    PATH: boot():/vmlinuz.old
-    MODULE_PATH: boot():/initrd.img.old
-    CMDLINE: root=/dev/mapper/$ROOT_MAPPER rootflags=subvol=$SUBVOL_ROOT rw quiet splash
-EOF
-
-echo "limine.conf created:"
-cat "$TARGET/boot/efi/limine.conf"
-echo ""
-
-# Also place a copy in EFI/limine/ as a fallback location
-cp "$TARGET/boot/efi/limine.conf" "$TARGET/boot/efi/EFI/limine/limine.conf"
-cp "$TARGET/boot/efi/limine.conf" "$TARGET/boot/efi/EFI/BOOT/limine.conf"
-
-# ─── Step 5: Install kernel update hooks ────────────────────────────────────
-
-step "Installing kernel update hooks"
-
-echo "These hooks ensure that whenever a kernel is updated via apt,"
-echo "the new kernel and initramfs are automatically copied to the ESP."
-echo ""
-
-# --- Post-install hook (runs after a new kernel is installed) ---
-mkdir -p "$TARGET/etc/kernel/postinst.d"
-
-cat > "$TARGET/etc/kernel/postinst.d/zz-update-limine" << 'EOF'
+# Install the reviewed maintenance helper, then publish a complete boot generation.
+install -m755 "$SCRIPT_DIR/../maintenance/update-limine" "$TARGET/usr/local/sbin/update-limine"
+for directory in etc/kernel/postinst.d etc/kernel/postrm.d etc/initramfs/post-update.d; do
+    mkdir -p "$TARGET/$directory"
+    cat > "$TARGET/$directory/zz-update-limine" <<'HOOK'
 #!/bin/sh
-# Kernel post-install hook for Limine bootloader
-#
-# This hook intentionally does NOT write to the ESP. The
-# /etc/initramfs/post-update.d/zz-update-limine hook runs after both the
-# kernel AND initramfs are fully built, and handles the ESP update atomically
-# (rotate current → .old, then install new pair). Writing the kernel here
-# without the matching initramfs would leave the ESP in a mismatched state.
-#
-# Nothing to do — post-update.d handles it.
-exit 0
-EOF
-
-chmod +x "$TARGET/etc/kernel/postinst.d/zz-update-limine"
-
-# --- Post-remove hook (runs after a kernel is removed) ---
-# When the current kernel is removed, update ESP with the latest remaining kernel.
-mkdir -p "$TARGET/etc/kernel/postrm.d"
-
-cat > "$TARGET/etc/kernel/postrm.d/zz-update-limine" << 'EOF'
-#!/bin/sh
-# Kernel post-remove hook for Limine bootloader
-#
-# After a kernel is removed, populate both ESP slots with the remaining
-# installed kernels (latest → current, second-latest → .old).
-# If only one kernel remains, both slots get the same kernel so the
-# "previous kernel" entry still boots.
-
-set -e
-
-ESP="/boot/efi"
-
-if ! mountpoint -q "$ESP"; then
-    echo "WARNING: ESP not mounted at $ESP — skipping Limine update after kernel removal."
-    echo "         Mount the ESP manually and run: update-initramfs -u -k all"
-    exit 0
-fi
-
-# List all remaining kernels, newest first
-KERNELS=$(ls /boot/vmlinuz-* 2>/dev/null | sort -Vr)
-
-if [ -z "$KERNELS" ]; then
-    echo "WARNING: No kernels found in /boot after removal!"
-    exit 1
-fi
-
-LATEST_VER=$(echo "$KERNELS" | head -1 | sed 's|/boot/vmlinuz-||')
-PREV_VER=$(echo "$KERNELS" | sed -n '2p' | sed 's|/boot/vmlinuz-||')
-# If only one kernel remains, use it for both slots
-if [ -z "$PREV_VER" ]; then
-    PREV_VER="$LATEST_VER"
-fi
-
-echo "Limine: Updating ESP after kernel removal..."
-echo "  current slot → $LATEST_VER"
-echo "  .old slot    → $PREV_VER"
-
-cp -f "/boot/vmlinuz-${LATEST_VER}"    "$ESP/vmlinuz"
-cp -f "/boot/initrd.img-${LATEST_VER}" "$ESP/initrd.img"
-cp -f "/boot/vmlinuz-${PREV_VER}"      "$ESP/vmlinuz.old"
-cp -f "/boot/initrd.img-${PREV_VER}"   "$ESP/initrd.img.old"
-
-echo "Limine: ESP updated."
-EOF
-
-chmod +x "$TARGET/etc/kernel/postrm.d/zz-update-limine"
-
-# --- Initramfs post-update hook ---
-# Also copy when initramfs is rebuilt (e.g., after driver installs)
-mkdir -p "$TARGET/etc/initramfs/post-update.d"
-
-cat > "$TARGET/etc/initramfs/post-update.d/zz-update-limine" << 'EOF'
-#!/bin/sh
-# Initramfs post-update hook for Limine bootloader
-#
-# Arguments: $1 = kernel version, $2 = initramfs path
-#
-# This hook runs after BOTH the kernel and initramfs are fully available.
-# It rotates the current ESP pair → .old slots, then installs the new pair.
-# The .old slots give a bootable fallback if the new kernel does not work.
-# Select "Ubuntu (previous kernel)" in the Limine menu to use the rollback.
-
-set -e
-
-KERNEL_VERSION="$1"
-ESP="/boot/efi"
-
-if ! mountpoint -q "$ESP"; then
-    exit 0
-fi
-
-echo "Limine: Updating ESP for kernel ${KERNEL_VERSION}..."
-
-# Step 1: Rotate current pair → .old (safe fallback for bad new kernels).
-# Do the copy before overwriting so .old is always a valid, complete pair.
-if [ -f "$ESP/vmlinuz" ]; then
-    cp -f "$ESP/vmlinuz"   "$ESP/vmlinuz.old"
-fi
-if [ -f "$ESP/initrd.img" ]; then
-    cp -f "$ESP/initrd.img" "$ESP/initrd.img.old"
-fi
-
-# Step 2: Install the new pair.
-cp -f "/boot/vmlinuz-${KERNEL_VERSION}"    "$ESP/vmlinuz"
-cp -f "/boot/initrd.img-${KERNEL_VERSION}" "$ESP/initrd.img"
-
-echo "Limine: ESP updated. Previous kernel saved as vmlinuz.old/initrd.img.old."
-EOF
-
-chmod +x "$TARGET/etc/initramfs/post-update.d/zz-update-limine"
-
-echo "All kernel update hooks installed:"
-echo "  - /etc/kernel/postinst.d/zz-update-limine"
-echo "  - /etc/kernel/postrm.d/zz-update-limine"
-echo "  - /etc/initramfs/post-update.d/zz-update-limine"
+exec /usr/local/sbin/update-limine
+HOOK
+    chmod 755 "$TARGET/$directory/zz-update-limine"
+done
+chroot "$TARGET" /usr/local/sbin/update-limine
 
 # ─── Step 6: Register Limine in UEFI boot manager ───────────────────────────
 
@@ -338,10 +152,10 @@ echo "IMPORTANT: Before rebooting, make sure:"
 echo "  1. Secure Boot is DISABLED in your UEFI firmware"
 echo "     (Limine does not support Secure Boot)"
 echo "  2. You remember your LUKS passphrase"
-echo "  3. Copy this scripts directory (including r8127-11.016.00.tar.bz2) to the"
+echo "  3. Copy the repository scripts and maintenance directories to the"
 echo "     installed system — e.g. cp -r $SCRIPT_DIR /mnt/home/<user>/"
-echo "     Script 05 builds the RTL8127 ethernet driver from it on first boot."
-echo "     Without ethernet there is no internet access on first boot."
+echo "     Script 05 optionally installs rootless Podman prerequisites."
+echo "     Use the distro network driver; do not blacklist r8169 automatically."
 echo ""
 echo "To reboot:"
 echo "  exit        # if inside chroot"
@@ -350,7 +164,7 @@ echo "  reboot"
 echo ""
 echo "After reboot:"
 echo "  - You will see a LUKS password prompt → enter your OS disk passphrase"
-echo "  - The Incus disk will unlock automatically via keyfile"
+echo "  - The data disk unlocks after encrypted root is available"
 echo "  - Limine will show a boot menu → select Ubuntu"
 echo "  - You should boot into your new system!"
 echo ""

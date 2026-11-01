@@ -1,0 +1,201 @@
+# AI Workstation — Architecture Review and Incus Removal
+
+## 1. Background
+
+I created a GitHub repository to automate setting up my Ubuntu workstation:
+
+**Repository:** https://github.com/rjthg/bootstrap-ubuntu
+
+The repository should also be available locally in my AI Workstation project. Please locate and inspect that copy if accessible.
+
+**Important:** The GitHub repository is outdated and does not necessarily represent my current installed system.
+
+I initially designed the workstation with a separate encrypted NVMe disk dedicated to Incus, intending to run AI workloads inside Incus containers for security.
+
+After learning more about local AI inference and containers, I suspect Incus is unnecessary complexity. I want to simplify the architecture without sacrificing security, performance, maintainability, or future flexibility.
+
+## 2. Hardware and operating system
+
+| Component | Configuration |
+|---|---|
+| CPU | AMD Ryzen AI Max+ PRO 395 |
+| GPU | Integrated AMD Radeon 8060S (RDNA 3.5, gfx1151) |
+| RAM | 128 GB unified memory |
+| OS | Ubuntu 26.04 LTS |
+| Bootloader | Limine |
+| OS SSD | Crucial P310, 2 TB, PCIe Gen4 |
+| Secondary SSD | Crucial P510, 2 TB, PCIe Gen5 |
+| Storage | LUKS2 encryption and Btrfs |
+
+The Ubuntu installation has already been upgraded to 26.04 LTS. I am still using Limine.
+
+My original bootstrap scripts may describe an older Ubuntu version and disk configuration.
+
+## 3. Intended workloads
+
+My priorities are:
+
+1. **Local LLM inference** — Running models locally with GPU acceleration, including potentially larger quantized models that benefit from 128 GB of unified memory.
+2. **Software development** — Development tools, reproducible environments, coding agents, and experimentation.
+3. **Self-hosted services** — Running applications and development infrastructure locally.
+4. **Future AI experimentation** — Possibly training or fine-tuning models, but not in the near future.
+
+I want a workstation that's secure, performant, relatively simple, and easy to maintain.
+
+I prefer avoiding infrastructure that provides little practical value for my current workloads.
+
+## 4. Incus decision
+
+**I am not currently using Incus for anything important. All Incus instances, containers, VMs, and storage volumes can be discarded.**
+
+I am comfortable uninstalling Incus entirely.
+
+The previous discussion concluded:
+
+- Incus is not required for local LLM inference.
+- Rootless Podman is probably sufficient for most application containers and self-hosted services.
+- Docker is another option when compatibility makes it convenient.
+- Incus system containers and ordinary OCI containers share the host Linux kernel, so Incus system containers do not inherently provide VM-level security.
+- Full virtual machines may be appropriate for high-risk workloads, particularly autonomous AI agents that execute untrusted code.
+- There is no current justification for dedicating an entire 2 TB SSD exclusively to Incus.
+
+**Tentative decision: retire Incus and adopt rootless Podman as the primary container runtime.**
+
+Please reassess this if the actual repository or workload suggests a better design.
+
+## 5. Proposed storage architecture
+
+Keep the two physical SSDs independent.
+
+### P310 — 2 TB OS SSD
+
+Retain the existing Ubuntu installation, Limine, LUKS2 encryption, and Btrfs layout.
+
+Use it for:
+
+- Ubuntu and system packages
+- Home directory
+- Development tools
+- Regular application installations
+- Podman images and relatively small container volumes
+
+Avoid reinstalling or repartitioning this disk unnecessarily.
+
+### P510 — 2 TB general-purpose data SSD
+
+Remove its dedicated Incus role.
+
+Configure it as an encrypted Btrfs filesystem mounted at `/data`.
+
+Suggested directories:
+
+```text
+/data/
+├── models/       # Local LLM models and weights
+├── services/     # Persistent container/service data
+├── projects/     # Large development projects
+├── datasets/     # Future training/fine-tuning data
+└── scratch/      # Temporary workspace
+```
+
+These should share the available filesystem capacity without unnecessary fixed-size partitions.
+
+The objective is to retain storage flexibility and separation between OS and data without adding needless complexity.
+
+There is no need for RAID or a filesystem spanning both SSDs.
+
+## 6. AI inference architecture
+
+The current recommendation is:
+
+- Start with Ollama or llama.cpp running natively on Ubuntu.
+- Verify hardware acceleration using the AMD Radeon 8060S.
+- Investigate ROCm support and packaging for the installed Ubuntu 26.04 release before installing additional GPU software.
+- Consider containerizing inference later if there's a concrete benefit.
+- Introduce rootless Podman for services and development workloads.
+- Consider Quadlet/systemd for persistent Podman services.
+
+The Ryzen AI Max+ PRO 395 has 128 GB of shared system memory, which should allow running relatively large quantized models, subject to available memory, UMA settings, inference backend compatibility, and performance.
+
+Avoid premature optimization or unnecessary GPU software stacks.
+
+## 7. Important encryption/security concern
+
+The earlier review of the GitHub repository identified a potential security issue.
+
+The original scripts reportedly:
+
+1. Configured a LUKS unlock key for the Incus disk.
+2. Embedded that key in the initramfs.
+3. Copied the initramfs onto an unencrypted EFI System Partition for Limine.
+
+If this still matches my installed configuration, the secondary disk's encryption key may be recoverable through offline access to the EFI partition.
+
+**Please verify whether this issue still exists in the current installation and repository.**
+
+The proposed solution is to:
+
+- Preserve encryption on both SSDs.
+- Unlock the OS disk using my existing passphrase.
+- Store the secondary disk's unlock key securely within the encrypted OS filesystem.
+- Unlock the secondary disk after the encrypted root filesystem is available.
+- Avoid including the secondary disk's key in an unencrypted initramfs.
+- Retire any exposed old encryption keys and remove obsolete key material from relevant boot images and backups where feasible.
+- Preserve reliable Limine boot functionality and a recovery procedure.
+
+Do not assume the old encryption configuration still exists without inspecting the current system.
+
+## 8. Migration goals
+
+I would like to simplify the existing installation rather than reinstall Ubuntu.
+
+The tentative migration process is:
+
+1. Inspect the actual repository and installed configuration.
+2. Confirm physical disk identities and encryption mappings.
+3. Verify that no Incus workloads or volumes need preservation.
+4. Identify all Incus dependencies and configuration.
+5. Remove Incus cleanly.
+6. Remove obsolete Incus-specific storage and boot configuration.
+7. Repurpose only the secondary P510 SSD into encrypted general-purpose storage.
+8. Configure `/data` mounting and automatic unlocking securely.
+9. Verify Limine, encryption, mounts, system services, and boot recovery.
+10. Introduce GPU-accelerated inference and rootless Podman incrementally.
+11. Update the bootstrap repository to reflect the simplified architecture.
+
+**Safety requirements:**
+
+- Do not wipe, repartition, or reinstall the OS SSD.
+- Do not execute the original destructive bootstrap scripts on the installed workstation.
+- Verify disk identities using persistent identifiers before any destructive operation.
+- Do not assume repository configuration equals live-system configuration.
+- Back up important data and preserve a boot recovery path.
+- Inspect and propose changes before executing destructive commands.
+
+## 9. What I want Work mode to do
+
+Please begin by locating and thoroughly inspecting the local `bootstrap-ubuntu` repository if it is accessible.
+
+Focus particularly on:
+
+- Disk partitioning and encryption scripts
+- Btrfs layout and mounting
+- Limine and initramfs setup
+- Incus installation and storage configuration
+- Existing security hardening
+- Relevant AI/GPU setup
+- Dependencies that would be affected by removing Incus
+
+Then:
+
+1. **Evaluate whether our proposed simplified architecture is sound.** Challenge unnecessary complexity, including any complexity in our proposed solution.
+2. **Identify exactly what needs to change** in the existing scripts and configuration.
+3. **Separate repository changes from live-system migration.** The repository is outdated, so do not assume it accurately describes the installed machine.
+4. **Propose a safe, minimal migration plan**, including verification commands, security considerations, rollback strategy, and any unresolved questions.
+5. **Recommend an appropriate inference and container stack** for this specific AMD Ryzen AI Max+ PRO 395 workstation.
+
+I value simplicity, maintainability, security, performance, and long-term flexibility, in roughly that order.
+
+**Please inspect and propose the plan first. Do not run destructive disk operations or modify boot/encryption configuration without my explicit approval.**
+
+Ask targeted questions only where the answers materially affect the design or migration.

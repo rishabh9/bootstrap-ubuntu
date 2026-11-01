@@ -1,3 +1,5 @@
+> HISTORICAL REFERENCE ONLY. Superseded by README.md and the current scripts. Do not follow its old key-embedding or Incus setup instructions. RCU causal hypotheses were not verified.
+
 # RCU Stall Warnings When Running Install Scripts in a VM
 
 ## Context

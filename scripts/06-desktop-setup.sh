@@ -2,7 +2,7 @@
 # =============================================================================
 # 06-desktop-setup.sh
 # =============================================================================
-# Optional. Run this AFTER 05-post-boot-setup.sh to install a Wayland desktop.
+# Optional, independent of storage and 05-post-boot-setup.sh to install a Wayland desktop.
 #
 # This script installs and configures:
 #   1. Niri (scrollable-tiling Wayland compositor), built from source

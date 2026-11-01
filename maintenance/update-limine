@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+# Installed by fresh-install script 04. No partitioning/encryption changes.
+set -euo pipefail
+ESP=/boot/efi
+BOOT=/boot
+[[ $EUID == 0 ]] || { echo 'Run as root' >&2; exit 1; }
+mountpoint -q "$ESP" || { echo 'ESP is not mounted; refusing update' >&2; exit 1; }
+exec 9>/run/lock/update-limine.lock
+flock -x 9
+mapfile -t kernels < <(find "$BOOT" -maxdepth 1 -type f -name 'vmlinuz-*' -printf '%f\n' | sort -Vr)
+versions=()
+for kernel in "${kernels[@]}"; do
+    version=${kernel#vmlinuz-}
+    [[ -s $BOOT/initrd.img-$version && -d /lib/modules/$version ]] || continue
+    versions+=("$version")
+    [[ ${#versions[@]} == 2 ]] && break
+done
+[[ ${#versions[@]} -gt 0 ]] || { echo 'No complete kernel pair' >&2; exit 1; }
+[[ ${#versions[@]} == 2 ]] || versions+=("${versions[0]}")
+needed=0
+for version in "${versions[@]}"; do
+    listing=$(lsinitramfs "$BOOT/initrd.img-$version")
+    [[ $listing == *cryptroot/crypttab* && $listing != *luks-data-keyfile* && $listing != *luks-incus-keyfile* ]] || { echo 'Unsafe initramfs' >&2; exit 1; }
+    needed=$((needed + $(stat -c %s "$BOOT/vmlinuz-$version") + $(stat -c %s "$BOOT/initrd.img-$version")))
+done
+# Repeated package hooks with identical inputs must not consume another generation.
+previous=''
+if [[ -f $ESP/limine-generations/current ]]; then
+    previous=$(cat "$ESP/limine-generations/current")
+    if [[ $previous == boot.* && $previous != */* && -d $ESP/limine-generations/$previous ]]; then
+        unchanged=1
+        for slot in 0 1; do
+            cmp -s "$BOOT/vmlinuz-${versions[$slot]}" "$ESP/limine-generations/$previous/kernel-$slot" || unchanged=0
+            cmp -s "$BOOT/initrd.img-${versions[$slot]}" "$ESP/limine-generations/$previous/initrd-$slot" || unchanged=0
+        done
+        if (( unchanged )); then
+            for menu in "$ESP/limine.conf" "$ESP/EFI/limine/limine.conf" "$ESP/EFI/BOOT/limine.conf"; do
+                [[ -f $menu ]] && grep -F "limine-generations/$previous/" "$menu" >/dev/null || unchanged=0
+            done
+            (( ! unchanged )) || { echo 'Limine pairs unchanged'; exit 0; }
+        fi
+    fi
+fi
+available=$(df -B1 --output=avail "$ESP" | tail -1)
+(( available > needed + 16777216 )) || { echo 'ESP lacks staging space; review and remove unreferenced generations manually' >&2; exit 1; }
+mkdir -p "$ESP/limine-generations"
+generation=$(mktemp -d "$ESP/limine-generations/boot.XXXXXX")
+for slot in 0 1; do
+    version=${versions[$slot]}
+    cp "$BOOT/vmlinuz-$version" "$generation/kernel-$slot"
+    cp "$BOOT/initrd.img-$version" "$generation/initrd-$slot"
+    cmp "$BOOT/vmlinuz-$version" "$generation/kernel-$slot"
+    cmp "$BOOT/initrd.img-$version" "$generation/initrd-$slot"
+done
+sync
+relative=${generation#"$ESP"}
+config=$(mktemp "$ESP/limine.conf.XXXXXX")
+cat > "$config" <<EOF
+timeout: 5
+/Ubuntu (${versions[0]})
+    PROTOCOL: linux
+    PATH: boot():$relative/kernel-0
+    MODULE_PATH: boot():$relative/initrd-0
+    CMDLINE: root=/dev/mapper/cryptroot rootflags=subvol=@ rw quiet splash
+/Ubuntu (previous installed kernel ${versions[1]})
+    PROTOCOL: linux
+    PATH: boot():$relative/kernel-1
+    MODULE_PATH: boot():$relative/initrd-1
+    CMDLINE: root=/dev/mapper/cryptroot rootflags=subvol=@ rw quiet splash
+EOF
+# Each menu always names a fully written generation. Keep old generations for recovery.
+for directory in "$ESP/EFI/limine" "$ESP/EFI/BOOT"; do
+    mkdir -p "$directory"
+    cp "$config" "$directory/limine.conf.new"
+    mv "$directory/limine.conf.new" "$directory/limine.conf"
+done
+mv "$config" "$ESP/limine.conf"
+sync
+printf '%s\n' "${generation##*/}" > "$ESP/limine-generations/current.new"
+mv "$ESP/limine-generations/current.new" "$ESP/limine-generations/current"
+echo "Published complete Limine generation: $generation"
+# Do not automatically delete recovery generations. Repeated identical hooks are no-ops.
+

@@ -1,0 +1,993 @@
+
+===== Report scope =====
+Collected: 2026-10-29T00:54:38+00:00
+Read-only inspection; no package, mount, service, boot or encryption changes.
+Review before sharing: contains disk serials, UUIDs, paths and configuration.
+
+===== Operating system and hardware =====
+
+$ cat /etc/os-release
+PRETTY_NAME="Ubuntu 26.04.1 LTS"
+NAME="Ubuntu"
+VERSION_ID="26.04"
+VERSION="26.04.1 LTS (Resolute Raccoon)"
+VERSION_CODENAME=resolute
+ID=ubuntu
+ID_LIKE=debian
+HOME_URL="https://www.ubuntu.com/"
+SUPPORT_URL="https://help.ubuntu.com/"
+BUG_REPORT_URL="https://bugs.launchpad.net/ubuntu/"
+PRIVACY_POLICY_URL="https://www.ubuntu.com/legal/terms-and-policies/privacy-policy"
+UBUNTU_CODENAME=resolute
+LOGO=ubuntu-logo
+
+$ uname -r
+7.0.0-38-generic
+
+$ free -h
+               total        used        free      shared  buff/cache   available
+Mem:           124Gi       6.9Gi       105Gi       139Mi        13Gi       118Gi
+Swap:          4.0Gi          0B       4.0Gi
+
+$ lspci -nnk
+pcilib: Error reading /sys/bus/pci/devices/REDACTED_IPV6/label: Operation not permitted
+00:00.0 Host bridge [0600]: Advanced Micro Devices, Inc. [AMD] Strix/Strix Halo Root Complex [1022:1507] (rev 02)
+	DeviceName: Device 3
+	Subsystem: Advanced Micro Devices, Inc. [AMD] Strix/Strix Halo Root Complex [1022:1507]
+00:00.2 IOMMU [0806]: Advanced Micro Devices, Inc. [AMD] Strix/Strix Halo IOMMU [1022:1508] (rev 02)
+	Subsystem: Advanced Micro Devices, Inc. [AMD] Strix/Strix Halo IOMMU [1022:1508]
+00:01.0 Host bridge [0600]: Advanced Micro Devices, Inc. [AMD] Strix/Strix Halo Dummy Host Bridge [1022:1509]
+00:01.1 PCI bridge [0604]: Advanced Micro Devices, Inc. [AMD] Strix/Strix Halo PCIe USB4 Bridge [1022:150a] (rev 02)
+	Subsystem: Advanced Micro Devices, Inc. [AMD] Strix/Strix Halo PCIe USB4 Bridge [1022:150a]
+	Kernel driver in use: pcieport
+	Kernel modules: shpchp
+00:01.2 PCI bridge [0604]: Advanced Micro Devices, Inc. [AMD] Strix/Strix Halo PCIe USB4 Bridge [1022:150a] (rev 02)
+	Subsystem: Advanced Micro Devices, Inc. [AMD] Strix/Strix Halo PCIe USB4 Bridge [1022:150a]
+	Kernel driver in use: pcieport
+	Kernel modules: shpchp
+00:02.0 Host bridge [0600]: Advanced Micro Devices, Inc. [AMD] Strix/Strix Halo Dummy Host Bridge [1022:1509]
+00:02.1 PCI bridge [0604]: Advanced Micro Devices, Inc. [AMD] Strix/Strix Halo GPP Bridge [1022:150b]
+	Subsystem: Advanced Micro Devices, Inc. [AMD] Device [1022:1453]
+	Kernel driver in use: pcieport
+	Kernel modules: shpchp
+00:02.2 PCI bridge [0604]: Advanced Micro Devices, Inc. [AMD] Strix/Strix Halo GPP Bridge [1022:150b] (rev 02)
+	Subsystem: Advanced Micro Devices, Inc. [AMD] Device [1022:1453]
+	Kernel driver in use: pcieport
+	Kernel modules: shpchp
+00:02.3 PCI bridge [0604]: Advanced Micro Devices, Inc. [AMD] Strix/Strix Halo GPP Bridge [1022:150b] (rev 02)
+	Subsystem: Advanced Micro Devices, Inc. [AMD] Device [1022:1453]
+	Kernel driver in use: pcieport
+	Kernel modules: shpchp
+00:02.5 PCI bridge [0604]: Advanced Micro Devices, Inc. [AMD] Strix/Strix Halo GPP Bridge [1022:150b] (rev 02)
+	Subsystem: Advanced Micro Devices, Inc. [AMD] Device [1022:1453]
+	Kernel driver in use: pcieport
+	Kernel modules: shpchp
+00:03.0 Host bridge [0600]: Advanced Micro Devices, Inc. [AMD] Strix/Strix Halo Dummy Host Bridge [1022:1509]
+00:03.1 PCI bridge [0604]: Advanced Micro Devices, Inc. [AMD] Strix/Strix Halo GPP Bridge [1022:150b]
+	Subsystem: Advanced Micro Devices, Inc. [AMD] Device [1022:1453]
+	Kernel driver in use: pcieport
+	Kernel modules: shpchp
+00:03.2 PCI bridge [0604]: Advanced Micro Devices, Inc. [AMD] Strix/Strix Halo GPP Bridge [1022:150b] (rev 02)
+	Subsystem: Advanced Micro Devices, Inc. [AMD] Device [1022:1453]
+	Kernel driver in use: pcieport
+	Kernel modules: shpchp
+00:08.0 Host bridge [0600]: Advanced Micro Devices, Inc. [AMD] Strix/Strix Halo Dummy Host Bridge [1022:1509]
+00:08.1 PCI bridge [0604]: Advanced Micro Devices, Inc. [AMD] Strix/Strix Halo Internal GPP Bridge to Bus [C:A] [1022:150c]
+	Subsystem: Advanced Micro Devices, Inc. [AMD] Strix/Strix Halo Internal GPP Bridge to Bus [C:A] [1022:150c]
+	Kernel driver in use: pcieport
+	Kernel modules: shpchp
+00:08.2 PCI bridge [0604]: Advanced Micro Devices, Inc. [AMD] Strix/Strix Halo Internal GPP Bridge to Bus [C:A] [1022:150c]
+	Subsystem: Advanced Micro Devices, Inc. [AMD] Strix/Strix Halo Internal GPP Bridge to Bus [C:A] [1022:150c]
+	Kernel driver in use: pcieport
+	Kernel modules: shpchp
+00:08.3 PCI bridge [0604]: Advanced Micro Devices, Inc. [AMD] Strix/Strix Halo Internal GPP Bridge to Bus [C:A] [1022:150c]
+	Subsystem: Advanced Micro Devices, Inc. [AMD] Strix/Strix Halo Internal GPP Bridge to Bus [C:A] [1022:150c]
+	Kernel driver in use: pcieport
+	Kernel modules: shpchp
+00:14.0 SMBus [0c05]: Advanced Micro Devices, Inc. [AMD] FCH SMBus Controller [1022:790b] (rev 71)
+	Subsystem: Advanced Micro Devices, Inc. [AMD] FCH SMBus Controller [1022:790b]
+	Kernel driver in use: piix4_smbus
+	Kernel modules: i2c_piix4, sp5100_tco
+00:14.3 ISA bridge [0601]: Advanced Micro Devices, Inc. [AMD] FCH LPC Bridge [1022:790e] (rev 51)
+	Subsystem: Advanced Micro Devices, Inc. [AMD] FCH LPC Bridge [1022:790e]
+00:18.0 Host bridge [0600]: Advanced Micro Devices, Inc. [AMD] Strix Halo Data Fabric; Function 0 [1022:12b8]
+00:18.1 Host bridge [0600]: Advanced Micro Devices, Inc. [AMD] Strix Halo Data Fabric; Function 1 [1022:12b9]
+00:18.2 Host bridge [0600]: Advanced Micro Devices, Inc. [AMD] Strix Halo Data Fabric; Function 2 [1022:12ba]
+00:18.3 Host bridge [0600]: Advanced Micro Devices, Inc. [AMD] Strix Halo Data Fabric; Function 3 [1022:12bb]
+	Kernel driver in use: k10temp
+	Kernel modules: k10temp
+00:18.4 Host bridge [0600]: Advanced Micro Devices, Inc. [AMD] Strix Halo Data Fabric; Function 4 [1022:12bc]
+00:18.5 Host bridge [0600]: Advanced Micro Devices, Inc. [AMD] Strix Halo Data Fabric; Function 5 [1022:12bd]
+00:18.6 Host bridge [0600]: Advanced Micro Devices, Inc. [AMD] Strix Halo Data Fabric; Function 6 [1022:12be]
+00:18.7 Host bridge [0600]: Advanced Micro Devices, Inc. [AMD] Strix Halo Data Fabric; Function 7 [1022:12bf]
+c1:00.0 Ethernet controller [0200]: Realtek Semiconductor Co., Ltd. RTL8127 10GbE Controller [10ec:8127] (rev 05)
+	Subsystem: Realtek Semiconductor Co., Ltd. Device [10ec:0123]
+	Kernel driver in use: r8169
+	Kernel modules: r8169
+c2:00.0 SD Host controller [0805]: O2 Micro, Inc. Device [1217:9863] (rev 01)
+	Subsystem: O2 Micro, Inc. Device [1217:0002]
+	Kernel driver in use: sdhci-pci
+	Kernel modules: sdhci_pci
+c3:00.0 Network controller [0280]: MEDIATEK Corp. MT7925 802.11be 160MHz 2x2 PCIe Wireless Network Adapter [Filogic 360] [14c3:7925]
+	Subsystem: AzureWave Device [1a3b:6002]
+	Kernel driver in use: mt7925e
+	Kernel modules: mt7925e
+c4:00.0 Non-Volatile memory controller [0108]: Micron/Crucial Technology P310 NVMe PCIe SSD (DRAM-less) [c0a9:5427] (rev 01)
+	Subsystem: Micron/Crucial Technology Device [c0a9:2b00]
+	Kernel driver in use: nvme
+	Kernel modules: nvme
+c5:00.0 Non-Volatile memory controller [0108]: Micron/Crucial Technology P510 NVMe PCIe SSD (DRAM-less) [c0a9:560a] (rev 01)
+	Subsystem: Micron/Crucial Technology Device [c0a9:2b00]
+	Kernel driver in use: nvme
+	Kernel modules: nvme
+c6:00.0 Ethernet controller [0200]: Realtek Semiconductor Co., Ltd. RTL8127 10GbE Controller [10ec:8127] (rev 05)
+	Subsystem: Realtek Semiconductor Co., Ltd. Device [10ec:0123]
+	Kernel driver in use: r8169
+	Kernel modules: r8169
+c7:00.0 Display controller [0380]: Advanced Micro Devices, Inc. [AMD/ATI] Strix Halo [Radeon Graphics / Radeon 8050S Graphics / Radeon 8060S Graphics] [1002:1586] (rev c1)
+	Subsystem: Advanced Micro Devices, Inc. [AMD/ATI] Device [1002:0124]
+	Kernel driver in use: amdgpu
+	Kernel modules: amdgpu
+c7:00.1 Audio device [0403]: Advanced Micro Devices, Inc. [AMD/ATI] Radeon High Definition Audio Controller [1002:1640]
+	Subsystem: Advanced Micro Devices, Inc. [AMD/ATI] Radeon High Definition Audio Controller [1002:1640]
+	Kernel driver in use: snd_hda_intel
+	Kernel modules: snd_hda_intel
+c7:00.2 Encryption controller [1080]: Advanced Micro Devices, Inc. [AMD] Strix/Krackan/Strix Halo CCP/ASP [1022:17e0]
+	Subsystem: Advanced Micro Devices, Inc. [AMD] Strix/Krackan/Strix Halo CCP/ASP [1022:17e0]
+	Kernel driver in use: ccp
+	Kernel modules: ccp
+c7:00.4 USB controller [0c03]: Advanced Micro Devices, Inc. [AMD] Strix Halo USB 3.1 xHCI [1022:1587]
+	Subsystem: Advanced Micro Devices, Inc. [AMD] Device [1022:15b9]
+	Kernel driver in use: xhci_hcd
+	Kernel modules: xhci_pci
+c7:00.5 Multimedia controller [0480]: Advanced Micro Devices, Inc. [AMD] Audio Coprocessor [1022:15e2] (rev 70)
+	Subsystem: Advanced Micro Devices, Inc. [AMD] Audio Coprocessor [1022:15e2]
+	Kernel driver in use: snd_acp_pci
+	Kernel modules: snd_pci_acp3x, snd_rn_pci_acp3x, snd_pci_acp5x, snd_pci_acp6x, snd_acp_pci, snd_rpl_pci_acp6x, snd_pci_ps, snd_sof_amd_renoir, snd_sof_amd_rembrandt, snd_sof_amd_vangogh, snd_sof_amd_acp63, snd_sof_amd_acp70
+c7:00.6 Audio device [0403]: Advanced Micro Devices, Inc. [AMD] Ryzen HD Audio Controller [1022:15e3]
+	Subsystem: Advanced Micro Devices, Inc. [AMD] Device [1022:d955]
+	Kernel driver in use: snd_hda_intel
+	Kernel modules: snd_hda_intel
+c8:00.0 Non-Essential Instrumentation [1300]: Advanced Micro Devices, Inc. [AMD] Strix/Strix Halo PCIe Dummy Function [1022:150d]
+	Subsystem: Advanced Micro Devices, Inc. [AMD] Strix/Strix Halo PCIe Dummy Function [1022:150d]
+c8:00.1 Signal processing controller [1180]: Advanced Micro Devices, Inc. [AMD] Strix/Krackan/Strix Halo Neural Processing Unit [1022:17f0] (rev 11)
+	Subsystem: Advanced Micro Devices, Inc. [AMD] Strix/Krackan/Strix Halo Neural Processing Unit [1022:17f0]
+	Kernel driver in use: amdxdna
+	Kernel modules: amdxdna
+c9:00.0 USB controller [0c03]: Advanced Micro Devices, Inc. [AMD] Strix Halo USB 3.1 xHCI [1022:1588]
+	Subsystem: Advanced Micro Devices, Inc. [AMD] Device [1022:15b9]
+	Kernel driver in use: xhci_hcd
+	Kernel modules: xhci_pci
+c9:00.3 USB controller [0c03]: Advanced Micro Devices, Inc. [AMD] Strix Halo USB 3.1 xHCI [1022:1589]
+	Subsystem: Advanced Micro Devices, Inc. [AMD] Strix Halo USB 3.1 xHCI [1022:1589]
+	Kernel driver in use: xhci_hcd
+	Kernel modules: xhci_pci
+c9:00.4 USB controller [0c03]: Advanced Micro Devices, Inc. [AMD] Strix Halo USB 3.1 xHCI [1022:158b]
+	Subsystem: Advanced Micro Devices, Inc. [AMD] Strix Halo USB 3.1 xHCI [1022:158b]
+	Kernel driver in use: xhci_hcd
+	Kernel modules: xhci_pci
+c9:00.5 USB controller [0c03]: Advanced Micro Devices, Inc. [AMD] Strix Halo USB4 Host Router [1022:158d]
+	Subsystem: Advanced Micro Devices, Inc. [AMD] Strix Halo USB4 Host Router [1022:158d]
+	Kernel driver in use: thunderbolt
+	Kernel modules: thunderbolt
+c9:00.6 USB controller [0c03]: Advanced Micro Devices, Inc. [AMD] Strix Halo USB4 Host Router [1022:158e]
+	Subsystem: Advanced Micro Devices, Inc. [AMD] Strix Halo USB4 Host Router [1022:158e]
+	Kernel driver in use: thunderbolt
+	Kernel modules: thunderbolt
+
+===== Storage identities and mounts =====
+
+$ lsblk -e 7 -o NAME\,PATH\,SIZE\,MODEL\,SERIAL\,TYPE\,FSTYPE\,UUID\,MOUNTPOINTS
+NAME           PATH                    SIZE MODEL          SERIAL       TYPE  FSTYPE      UUID                                 MOUNTPOINTS
+nvme1n1        /dev/nvme1n1            1.8T CT2000P510SSD8 REPLACE_P510_SERIAL disk
+`-nvme1n1p1    /dev/nvme1n1p1          1.8T                             part  crypto_LUKS REPLACE_UUID_03
+  `-cryptincus /dev/mapper/cryptincus  1.8T                             crypt btrfs       REPLACE_UUID_05 /var/lib/incus/storage-pools/incus-pool
+nvme0n1        /dev/nvme0n1            1.8T CT2000P310SSD8 REPLACE_P310_SERIAL disk
+|-nvme0n1p1    /dev/nvme0n1p1            1G                             part  vfat        REPLACE_ESP_UUID                            /boot/efi
+`-nvme0n1p2    /dev/nvme0n1p2          1.8T                             part  crypto_LUKS REPLACE_UUID_02
+  `-cryptroot  /dev/mapper/cryptroot   1.8T                             crypt btrfs       REPLACE_UUID_04 /var/log
+                                                                                                                               /var/cache/apt
+                                                                                                                               /swap
+                                                                                                                               /home
+                                                                                                                               /
+
+$ ls -l /dev/disk/by-id/
+total 0
+lrwxrwxrwx 1 root root 10 Oct 28 12:37 dm-name-cryptincus -> ../../dm-1
+lrwxrwxrwx 1 root root 10 Oct 28 12:37 dm-name-cryptroot -> ../../dm-0
+lrwxrwxrwx 1 root root 10 Oct 28 12:37 dm-uuid-CRYPT-LUKS2-REDACTED_HEX_ID-cryptroot -> ../../dm-0
+lrwxrwxrwx 1 root root 10 Oct 28 12:37 dm-uuid-CRYPT-LUKS2-REDACTED_HEX_ID-cryptincus -> ../../dm-1
+lrwxrwxrwx 1 root root 13 Oct 28 12:36 nvme-CT2000P310SSD8_REPLACE_P310_SERIAL -> ../../nvme0n1
+lrwxrwxrwx 1 root root 15 Oct 28 12:36 nvme-CT2000P310SSD8_REPLACE_P310_SERIAL-part1 -> ../../nvme0n1p1
+lrwxrwxrwx 1 root root 15 Oct 28 12:36 nvme-CT2000P310SSD8_REPLACE_P310_SERIAL-part2 -> ../../nvme0n1p2
+lrwxrwxrwx 1 root root 13 Oct 28 12:36 nvme-CT2000P310SSD8_REPLACE_P310_SERIAL_1 -> ../../nvme0n1
+lrwxrwxrwx 1 root root 15 Oct 28 12:36 nvme-CT2000P310SSD8_REPLACE_P310_SERIAL_1-part1 -> ../../nvme0n1p1
+lrwxrwxrwx 1 root root 15 Oct 28 12:36 nvme-CT2000P310SSD8_REPLACE_P310_SERIAL_1-part2 -> ../../nvme0n1p2
+lrwxrwxrwx 1 root root 13 Oct 28 12:36 nvme-CT2000P510SSD8_REPLACE_P510_SERIAL -> ../../nvme1n1
+lrwxrwxrwx 1 root root 15 Oct 28 12:36 nvme-CT2000P510SSD8_REPLACE_P510_SERIAL-part1 -> ../../nvme1n1p1
+lrwxrwxrwx 1 root root 13 Oct 28 12:36 nvme-CT2000P510SSD8_REPLACE_P510_SERIAL_1 -> ../../nvme1n1
+lrwxrwxrwx 1 root root 15 Oct 28 12:36 nvme-CT2000P510SSD8_REPLACE_P510_SERIAL_1-part1 -> ../../nvme1n1p1
+lrwxrwxrwx 1 root root 13 Oct 28 12:36 nvme-eui.REPLACE_P310_EUI -> ../../nvme0n1
+lrwxrwxrwx 1 root root 15 Oct 28 12:36 nvme-eui.REPLACE_P310_EUI-part1 -> ../../nvme0n1p1
+lrwxrwxrwx 1 root root 15 Oct 28 12:36 nvme-eui.REPLACE_P310_EUI-part2 -> ../../nvme0n1p2
+lrwxrwxrwx 1 root root 13 Oct 28 12:36 nvme-eui.REPLACE_P510_EUI -> ../../nvme1n1
+lrwxrwxrwx 1 root root 15 Oct 28 12:36 nvme-eui.REPLACE_P510_EUI-part1 -> ../../nvme1n1p1
+
+$ findmnt -R /
+TARGET                                                     SOURCE                                                 FSTYPE      OPTIONS
+/                                                          /dev/mapper/cryptroot[/@]                              btrfs       rw,noatime,compress=zstd:3,ssd,discard=async,space_cache=v2,subvolid=256,subvol=/@
+|-/sys                                                     sysfs                                                  sysfs       rw,nosuid,nodev,noexec,relatime
+| |-/sys/kernel/security                                   securityfs                                             securityfs  rw,nosuid,nodev,noexec,relatime
+| |-/sys/fs/cgroup                                         cgroup2                                                cgroup2     rw,nosuid,nodev,noexec,relatime,nsdelegate,memory_recursiveprot,memory_hugetlb_accounting
+| |-/sys/fs/pstore                                         none                                                   pstore      rw,nosuid,nodev,noexec,relatime
+| |-/sys/firmware/efi/efivars                              efivarfs                                               efivarfs    rw,nosuid,nodev,noexec,relatime
+| |-/sys/fs/bpf                                            bpf                                                    bpf         rw,nosuid,nodev,noexec,relatime,mode=700
+| |-/sys/kernel/config                                     configfs                                               configfs    rw,nosuid,nodev,noexec,relatime
+| |-/sys/kernel/tracing                                    tracefs                                                tracefs     rw,nosuid,nodev,noexec,relatime
+| |-/sys/kernel/debug                                      debugfs                                                debugfs     rw,nosuid,nodev,noexec,relatime
+| `-/sys/fs/fuse/connections                               fusectl                                                fusectl     rw,nosuid,nodev,noexec,relatime
+|-/proc                                                    proc                                                   proc        rw,nosuid,nodev,noexec,relatime
+| `-/proc/sys/fs/binfmt_misc                               systemd-1                                              autofs      rw,relatime,fd=36,pgrp=1,timeout=0,minproto=5,maxproto=5,direct,pipe_ino=9419
+|   `-/proc/sys/fs/binfmt_misc                             binfmt_misc                                            binfmt_misc rw,nosuid,nodev,noexec,relatime
+|-/dev                                                     udev                                                   devtmpfs    rw,nosuid,relatime,size=60709052k,nr_inodes=15177263,mode=755,inode64
+| |-/dev/pts                                               devpts                                                 devpts      rw,nosuid,noexec,relatime,gid=5,mode=600,ptmxmode=000
+| |-/dev/shm                                               tmpfs                                                  tmpfs       rw,nosuid,nodev,inode64,usrquota
+| |-/dev/mqueue                                            mqueue                                                 mqueue      rw,nosuid,nodev,noexec,relatime
+| `-/dev/hugepages                                         hugetlbfs                                              hugetlbfs   rw,nosuid,nodev,relatime,pagesize=2M
+|-/run                                                     tmpfs                                                  tmpfs       rw,nosuid,nodev,noexec,relatime,size=13100876k,mode=755,inode64
+| |-/run/credentials/systemd-journald.service              none                                                   tmpfs       ro,nosuid,nodev,noexec,relatime,nosymfollow,size=1024k,nr_inodes=1024,mode=700,inode64,noswap
+| |-/run/credentials/systemd-resolved.service              none                                                   tmpfs       ro,nosuid,nodev,noexec,relatime,nosymfollow,size=1024k,nr_inodes=1024,mode=700,inode64,noswap
+| |-/run/credentials/systemd-cryptsetup@cryptroot.service  none                                                   tmpfs       ro,nosuid,nodev,noexec,relatime,nosymfollow,size=1024k,nr_inodes=1024,mode=700,inode64,noswap
+| |-/run/credentials/systemd-cryptsetup@cryptincus.service none                                                   tmpfs       ro,nosuid,nodev,noexec,relatime,nosymfollow,size=1024k,nr_inodes=1024,mode=700,inode64,noswap
+| |-/run/snapd/ns                                          tmpfs[/snapd/ns]                                       tmpfs       rw,nosuid,nodev,noexec,relatime,size=13100876k,mode=755,inode64
+| | |-/run/snapd/ns/lemonade-server.mnt                    nsfs[mnt:[4026533456]]                                 nsfs        rw
+| | |-/run/snapd/ns/canonical-livepatch.mnt                nsfs[mnt:[4026533220]]                                 nsfs        rw
+| | |-/run/snapd/ns/snapd-desktop-integration.mnt          nsfs[mnt:[4026533510]]                                 nsfs        rw
+| | |-/run/snapd/ns/prompting-client.mnt                   nsfs[mnt:[4026533512]]                                 nsfs        rw
+| | |-/run/snapd/ns/thunderbird.mnt                        nsfs[mnt:[4026533329]]                                 nsfs        rw
+| | |-/run/snapd/ns/firefox.mnt                            nsfs[mnt:[4026533327]]                                 nsfs        rw
+| | `-/run/snapd/ns/firmware-updater.mnt                   nsfs[mnt:[4026534180]]                                 nsfs        rw
+| `-/run/user/1000                                         tmpfs                                                  tmpfs       rw,nosuid,nodev,relatime,size=13100872k,nr_inodes=3275218,mode=700,uid=1000,gid=1000,inode64
+|   `-/run/user/1000/doc                                   portal                                                 fuse.portal rw,nosuid,nodev,relatime,user_id=1000,group_id=1000
+|-/snap/bare/5                                             /dev/loop0                                             squashfs    ro,nodev,relatime,errors=continue,threads=single
+|-/home                                                    /dev/mapper/cryptroot[/@home]                          btrfs       rw,noatime,compress=zstd:3,ssd,discard=async,space_cache=v2,subvolid=257,subvol=/@home
+|-/snap/canonical-livepatch/414                            /dev/loop1                                             squashfs    ro,nodev,relatime,errors=continue,threads=single
+|-/snap/canonical-livepatch/418                            /dev/loop2                                             squashfs    ro,nodev,relatime,errors=continue,threads=single
+|-/snap/core22/2411                                        /dev/loop3                                             squashfs    ro,nodev,relatime,errors=continue,threads=single
+|-/snap/core22/2955                                        /dev/loop4                                             squashfs    ro,nodev,relatime,errors=continue,threads=single
+|-/snap/core24/1643                                        /dev/loop5                                             squashfs    ro,nodev,relatime,errors=continue,threads=single
+|-/snap/core24/2124                                        /dev/loop6                                             squashfs    ro,nodev,relatime,errors=continue,threads=single
+|-/snap/desktop-security-center/188                        /dev/loop7                                             squashfs    ro,nodev,relatime,errors=continue,threads=single
+|-/snap/desktop-security-center/206                        /dev/loop8                                             squashfs    ro,nodev,relatime,errors=continue,threads=single
+|-/snap/distrobuilder/2114                                 /dev/loop9                                             squashfs    ro,nodev,relatime,errors=continue,threads=single
+|-/snap/firefox/8969                                       /dev/loop11                                            squashfs    ro,nodev,relatime,errors=continue,threads=single
+|-/snap/firefox/8585                                       /dev/loop10                                            squashfs    ro,nodev,relatime,errors=continue,threads=single
+|-/snap/firmware-updater/258                               /dev/loop12                                            squashfs    ro,nodev,relatime,errors=continue,threads=single
+|-/snap/gnome-42-2204/247                                  /dev/loop13                                            squashfs    ro,nodev,relatime,errors=continue,threads=single
+|-/snap/gnome-42-2204/263                                  /dev/loop14                                            squashfs    ro,nodev,relatime,errors=continue,threads=single
+|-/snap/gnome-46-2404/164                                  /dev/loop15                                            squashfs    ro,nodev,relatime,errors=continue,threads=single
+|-/snap/gnome-46-2404/168                                  /dev/loop16                                            squashfs    ro,nodev,relatime,errors=continue,threads=single
+|-/snap/gtk-common-themes/1535                             /dev/loop17                                            squashfs    ro,nodev,relatime,errors=continue,threads=single
+|-/snap/lemonade/116                                       /dev/loop18                                            squashfs    ro,nodev,relatime,errors=continue,threads=single
+|-/snap/lemonade-desktop/333                               /dev/loop19                                            squashfs    ro,nodev,relatime,errors=continue,threads=single
+|-/snap/lemonade-desktop/339                               /dev/loop20                                            squashfs    ro,nodev,relatime,errors=continue,threads=single
+|-/snap/lemonade-server/1034                               /dev/loop21                                            squashfs    ro,nodev,relatime,errors=continue,threads=single
+|-/snap/lemonade-server/1098                               /dev/loop22                                            squashfs    ro,nodev,relatime,errors=continue,threads=single
+|-/snap/mesa-2404/1165                                     /dev/loop23                                            squashfs    ro,nodev,relatime,errors=continue,threads=single
+|-/snap/mesa-2404/1839                                     /dev/loop24                                            squashfs    ro,nodev,relatime,errors=continue,threads=single
+|-/snap/prompting-client/228                               /dev/loop25                                            squashfs    ro,nodev,relatime,errors=continue,threads=single
+|-/snap/snapd/27738                                        /dev/loop26                                            squashfs    ro,nodev,relatime,errors=continue,threads=single
+|-/snap/snapd/28254                                        /dev/loop27                                            squashfs    ro,nodev,relatime,errors=continue,threads=single
+|-/snap/snapd-desktop-integration/391                      /dev/loop28                                            squashfs    ro,nodev,relatime,errors=continue,threads=single
+|-/snap/spotify/97                                         /dev/loop29                                            squashfs    ro,nodev,relatime,errors=continue,threads=single
+|-/snap/spotify/99                                         /dev/loop30                                            squashfs    ro,nodev,relatime,errors=continue,threads=single
+|-/var/cache/apt                                           /dev/mapper/cryptroot[/@pkg]                           btrfs       rw,noatime,compress=zstd:3,ssd,discard=async,space_cache=v2,subvolid=259,subvol=/@pkg
+|-/tmp                                                     tmpfs                                                  tmpfs       rw,nosuid,nodev,size=65504372k,nr_inodes=1048576,inode64,usrquota
+|-/swap                                                    /dev/mapper/cryptroot[/@swap]                          btrfs       rw,noatime,compress=zstd:3,ssd,discard=async,space_cache=v2,subvolid=260,subvol=/@swap
+|-/snap/thunderbird/1274                                   /dev/loop32                                            squashfs    ro,nodev,relatime,errors=continue,threads=single
+|-/var/log                                                 /dev/mapper/cryptroot[/@log]                           btrfs       rw,noatime,compress=zstd:3,ssd,discard=async,space_cache=v2,subvolid=258,subvol=/@log
+|-/snap/thunderbird/1312                                   /dev/loop33                                            squashfs    ro,nodev,relatime,errors=continue,threads=single
+|-/boot/efi                                                /dev/nvme0n1p1                                         vfat        rw,relatime,fmask=0022,dmask=0022,codepage=437,iocharset=iso8859-1,shortname=mixed,errors=remount-ro
+|-/var/lib/incus-lxcfs                                     lxcfs                                                  fuse.lxcfs  rw,nosuid,nodev,relatime,user_id=0,group_id=0,allow_other
+|-/var/lib/incus/devices                                   tmpfs                                                  tmpfs       rw,relatime,size=256000k,mode=711,inode64
+|-/var/lib/incus/shmounts                                  tmpfs                                                  tmpfs       rw,relatime,size=100k,mode=711,inode64
+|-/var/lib/incus/guestapi                                  tmpfs                                                  tmpfs       rw,relatime,size=100k,mode=755,inode64
+`-/var/lib/incus/storage-pools/incus-pool                  /dev/disk/by-uuid/REPLACE_UUID_05 btrfs       rw,relatime,ssd,discard=async,space_cache=v2,user_subvol_rm_allowed,subvolid=5,subvol=/
+
+$ cat /etc/fstab
+# /etc/fstab — generated by install script
+# <filesystem>                           <mount>           <type>  <options>                                    <dump> <pass>
+
+# EFI System Partition
+UUID=REPLACE_ESP_UUID                           /boot/efi         vfat    defaults                                     0      1
+
+# Btrfs subvolumes on encrypted root
+UUID=REPLACE_UUID_04                    /                 btrfs   subvol=@,compress=zstd:3,noatime              0      0
+UUID=REPLACE_UUID_04                    /home             btrfs   subvol=@home,compress=zstd:3,noatime              0      0
+UUID=REPLACE_UUID_04                    /var/log          btrfs   subvol=@log,compress=zstd:3,noatime               0      0
+UUID=REPLACE_UUID_04                    /var/cache/apt    btrfs   subvol=@pkg,compress=zstd:3,noatime               0      0
+
+# Swap subvolume — deliberately omits compress=zstd from BTRFS_OPTS.
+# Btrfs refuses to activate a swapfile on a compressed extent (swapon fails
+# with EINVAL). noatime is kept to reduce unnecessary metadata writes.
+UUID=REPLACE_UUID_04                    /swap             btrfs   subvol=@swap,noatime                  0      0
+
+# NOTE: The Incus disk (/dev/mapper/cryptincus) is NOT mounted here.
+# Incus will manage it directly as a storage pool.
+# However, we still need it in crypttab so it gets unlocked at boot.
+/swap/swapfile    none    swap    defaults    0    0
+
+$ cat /etc/crypttab
+# /etc/crypttab
+# <target>       <source device>                          <key file>                <options>
+cryptroot     UUID=REPLACE_UUID_02                     none                      luks,discard
+cryptincus    UUID=REPLACE_UUID_03                    /etc/luks-incus-keyfile   luks,discard
+
+$ swapon --show
+NAME           TYPE SIZE USED PRIO
+/swap/swapfile file   4G   0B   -1
+
+===== Boot files and firmware entries =====
+
+$ ls -lh /boot /boot/efi
+/boot:
+total 223M
+-rw------- 1 root root  11M Sep  4 08:31 System.map-7.0.0-38-generic
+-rw------- 1 root root  11M Oct 15 07:48 System.map-7.0.0-42-generic
+-rw-r--r-- 1 root root 302K Sep  4 08:31 config-7.0.0-38-generic
+-rw-r--r-- 1 root root 302K Oct 15 07:48 config-7.0.0-42-generic
+drwxr-xr-x 3 root root 4.0K Jan  1  1970 efi
+drwxr-xr-x 1 root root   68 Oct  1 19:39 grub
+lrwxrwxrwx 1 root root   27 Oct 28 20:05 initrd.img -> initrd.img-7.0.0-42-generic
+-rw-r--r-- 1 root root  85M Oct 27 00:11 initrd.img-7.0.0-38-generic
+-rw-r--r-- 1 root root  85M Oct 28 20:05 initrd.img-7.0.0-42-generic
+lrwxrwxrwx 1 root root   27 Oct 28 20:05 initrd.img.old -> initrd.img-7.0.0-38-generic
+lrwxrwxrwx 1 root root   24 Oct 28 20:05 vmlinuz -> vmlinuz-7.0.0-42-generic
+-rw------- 1 root root  17M Sep  4 08:54 vmlinuz-7.0.0-38-generic
+-rw------- 1 root root  17M Oct 15 07:50 vmlinuz-7.0.0-42-generic
+lrwxrwxrwx 1 root root   24 Oct 28 20:05 vmlinuz.old -> vmlinuz-7.0.0-38-generic
+
+/boot/efi:
+total 202M
+drwxr-xr-x 4 root root 4.0K Mar 23  2026 EFI
+-rwxr-xr-x 1 root root  85M Oct 28 20:07 initrd.img
+-rwxr-xr-x 1 root root  85M Oct 28 20:07 initrd.img.old
+-rwxr-xr-x 1 root root 1.1K Mar 23  2026 limine.conf
+-rwxr-xr-x 1 root root  17M Oct 28 20:07 vmlinuz
+-rwxr-xr-x 1 root root  17M Oct 28 20:07 vmlinuz.old
+
+$ efibootmgr -v
+BootCurrent: 0000
+Timeout: 1 seconds
+BootOrder: 0000,0002,0001
+Boot0000* Limine	HD(1,GPT,REPLACE_UUID_06,0x800,0x200000)/\EFI\limine\BOOTX64.EFI
+      dp: REDACTED_HEX_METADATA / REDACTED_HEX_METADATA / 7f ff 04 00
+Boot0001* UEFI: Built-in EFI Shell	VenMedia(REPLACE_UUID_07)0000424f
+      dp: REDACTED_HEX_METADATA / 7f ff 04 00
+    data: 00 00 42 4f
+Boot0002* UEFI OS	HD(1,GPT,REPLACE_UUID_06,0x800,0x200000)/\EFI\BOOT\BOOTX64.EFI0000424f
+      dp: REDACTED_HEX_METADATA / REDACTED_HEX_METADATA / 7f ff 04 00
+    data: 00 00 42 4f
+
+===== Initramfs key-inclusion configuration references =====
+
+$ grep -RInE luks-incus\|KEYFILE_PATTERN\|cryptincus\|cryptsetup-keys\|copy_file.\*key /etc/initramfs-tools /etc/cryptsetup-initramfs /etc/crypttab /etc/fstab
+/etc/initramfs-tools/hooks/luks-keyfile:13:if [ ! -f /etc/luks-incus-keyfile ]; then
+/etc/initramfs-tools/hooks/luks-keyfile:14:    echo "ERROR: /etc/luks-incus-keyfile not found. Run 03-configure-system.sh first." >&2
+/etc/initramfs-tools/hooks/luks-keyfile:17:cp /etc/luks-incus-keyfile "${DESTDIR}/etc/luks-incus-keyfile"
+/etc/initramfs-tools/hooks/luks-keyfile:18:chmod 600 "${DESTDIR}/etc/luks-incus-keyfile"
+/etc/cryptsetup-initramfs/conf-hook:6:# KEYFILE_PATTERN: ...
+/etc/cryptsetup-initramfs/conf-hook:12:# /etc/keys/{root,swap}.key, you can set KEYFILE_PATTERN="/etc/keys/*.key"
+/etc/cryptsetup-initramfs/conf-hook:15:# If KEYFILE_PATTERN if null or unset (default) then no key file is
+/etc/cryptsetup-initramfs/conf-hook:32:#KEYFILE_PATTERN=
+/etc/crypttab:4:cryptincus    UUID=REPLACE_UUID_03                    /etc/luks-incus-keyfile   luks,discard
+/etc/fstab:18:# NOTE: The Incus disk (/dev/mapper/cryptincus) is NOT mounted here.
+
+===== Limine configuration and update hooks =====
+
+$ cat /boot/efi/limine.conf
+# Limine bootloader configuration — v10.x syntax (key: value, NOT key=value)
+# Docs: https://codeberg.org/Limine/Limine/src/branch/v10.x/CONFIG.md
+#
+# IMPORTANT NOTES:
+# - boot():/ refers to the volume this config was loaded from (the ESP/FAT32),
+#   NOT the root filesystem
+# - The kernel and initramfs are COPIED here by the update hooks
+# - Limine CANNOT read Btrfs or LUKS — everything it needs must be on FAT32
+#
+# Two entries are kept at all times:
+#   vmlinuz / initrd.img      — the current kernel (updated by apt)
+#   vmlinuz.old / initrd.img.old — the previous kernel (rollback target)
+# If the current kernel does not boot, select "Ubuntu (previous kernel)" here.
+
+timeout: 5
+
+/Ubuntu (Encrypted Btrfs)
+    PROTOCOL: linux
+    PATH: boot():/vmlinuz
+    MODULE_PATH: boot():/initrd.img
+    CMDLINE: root=/dev/mapper/cryptroot rootflags=subvol=@ rw quiet splash
+
+/Ubuntu (previous kernel)
+    PROTOCOL: linux
+    PATH: boot():/vmlinuz.old
+    MODULE_PATH: boot():/initrd.img.old
+    CMDLINE: root=/dev/mapper/cryptroot rootflags=subvol=@ rw quiet splash
+
+$ cat /boot/efi/EFI/limine/limine.conf
+# Limine bootloader configuration — v10.x syntax (key: value, NOT key=value)
+# Docs: https://codeberg.org/Limine/Limine/src/branch/v10.x/CONFIG.md
+#
+# IMPORTANT NOTES:
+# - boot():/ refers to the volume this config was loaded from (the ESP/FAT32),
+#   NOT the root filesystem
+# - The kernel and initramfs are COPIED here by the update hooks
+# - Limine CANNOT read Btrfs or LUKS — everything it needs must be on FAT32
+#
+# Two entries are kept at all times:
+#   vmlinuz / initrd.img      — the current kernel (updated by apt)
+#   vmlinuz.old / initrd.img.old — the previous kernel (rollback target)
+# If the current kernel does not boot, select "Ubuntu (previous kernel)" here.
+
+timeout: 5
+
+/Ubuntu (Encrypted Btrfs)
+    PROTOCOL: linux
+    PATH: boot():/vmlinuz
+    MODULE_PATH: boot():/initrd.img
+    CMDLINE: root=/dev/mapper/cryptroot rootflags=subvol=@ rw quiet splash
+
+/Ubuntu (previous kernel)
+    PROTOCOL: linux
+    PATH: boot():/vmlinuz.old
+    MODULE_PATH: boot():/initrd.img.old
+    CMDLINE: root=/dev/mapper/cryptroot rootflags=subvol=@ rw quiet splash
+
+$ cat /boot/efi/EFI/BOOT/limine.conf
+# Limine bootloader configuration — v10.x syntax (key: value, NOT key=value)
+# Docs: https://codeberg.org/Limine/Limine/src/branch/v10.x/CONFIG.md
+#
+# IMPORTANT NOTES:
+# - boot():/ refers to the volume this config was loaded from (the ESP/FAT32),
+#   NOT the root filesystem
+# - The kernel and initramfs are COPIED here by the update hooks
+# - Limine CANNOT read Btrfs or LUKS — everything it needs must be on FAT32
+#
+# Two entries are kept at all times:
+#   vmlinuz / initrd.img      — the current kernel (updated by apt)
+#   vmlinuz.old / initrd.img.old — the previous kernel (rollback target)
+# If the current kernel does not boot, select "Ubuntu (previous kernel)" here.
+
+timeout: 5
+
+/Ubuntu (Encrypted Btrfs)
+    PROTOCOL: linux
+    PATH: boot():/vmlinuz
+    MODULE_PATH: boot():/initrd.img
+    CMDLINE: root=/dev/mapper/cryptroot rootflags=subvol=@ rw quiet splash
+
+/Ubuntu (previous kernel)
+    PROTOCOL: linux
+    PATH: boot():/vmlinuz.old
+    MODULE_PATH: boot():/initrd.img.old
+    CMDLINE: root=/dev/mapper/cryptroot rootflags=subvol=@ rw quiet splash
+
+$ cat /etc/kernel/postinst.d/zz-update-limine
+#!/bin/sh
+# Kernel post-install hook for Limine bootloader
+#
+# This hook intentionally does NOT write to the ESP. The
+# /etc/initramfs/post-update.d/zz-update-limine hook runs after both the
+# kernel AND initramfs are fully built, and handles the ESP update atomically
+# (rotate current → .old, then install new pair). Writing the kernel here
+# without the matching initramfs would leave the ESP in a mismatched state.
+#
+# Nothing to do — post-update.d handles it.
+exit 0
+
+$ cat /etc/kernel/postrm.d/zz-update-limine
+#!/bin/sh
+# Kernel post-remove hook for Limine bootloader
+#
+# After a kernel is removed, populate both ESP slots with the remaining
+# installed kernels (latest → current, second-latest → .old).
+# If only one kernel remains, both slots get the same kernel so the
+# "previous kernel" entry still boots.
+
+set -e
+
+ESP="/boot/efi"
+
+if ! mountpoint -q "$ESP"; then
+    echo "WARNING: ESP not mounted at $ESP — skipping Limine update after kernel removal."
+    echo "         Mount the ESP manually and run: update-initramfs -u -k all"
+    exit 0
+fi
+
+# List all remaining kernels, newest first
+KERNELS=$(ls /boot/vmlinuz-* 2>/dev/null | sort -Vr)
+
+if [ -z "$KERNELS" ]; then
+    echo "WARNING: No kernels found in /boot after removal!"
+    exit 1
+fi
+
+LATEST_VER=$(echo "$KERNELS" | head -1 | sed 's|/boot/vmlinuz-||')
+PREV_VER=$(echo "$KERNELS" | sed -n '2p' | sed 's|/boot/vmlinuz-||')
+# If only one kernel remains, use it for both slots
+if [ -z "$PREV_VER" ]; then
+    PREV_VER="$LATEST_VER"
+fi
+
+echo "Limine: Updating ESP after kernel removal..."
+echo "  current slot → $LATEST_VER"
+echo "  .old slot    → $PREV_VER"
+
+cp -f "/boot/vmlinuz-${LATEST_VER}"    "$ESP/vmlinuz"
+cp -f "/boot/initrd.img-${LATEST_VER}" "$ESP/initrd.img"
+cp -f "/boot/vmlinuz-${PREV_VER}"      "$ESP/vmlinuz.old"
+cp -f "/boot/initrd.img-${PREV_VER}"   "$ESP/initrd.img.old"
+
+echo "Limine: ESP updated."
+
+$ cat /etc/initramfs/post-update.d/zz-update-limine
+#!/bin/sh
+# Initramfs post-update hook for Limine bootloader
+#
+# Arguments: $1 = kernel version, $2 = initramfs path
+#
+# This hook runs after BOTH the kernel and initramfs are fully available.
+# It rotates the current ESP pair → .old slots, then installs the new pair.
+# The .old slots give a bootable fallback if the new kernel does not work.
+# Select "Ubuntu (previous kernel)" in the Limine menu to use the rollback.
+
+set -e
+
+KERNEL_VERSION="$1"
+ESP="/boot/efi"
+
+if ! mountpoint -q "$ESP"; then
+    exit 0
+fi
+
+echo "Limine: Updating ESP for kernel ${KERNEL_VERSION}..."
+
+# Step 1: Rotate current pair → .old (safe fallback for bad new kernels).
+# Do the copy before overwriting so .old is always a valid, complete pair.
+if [ -f "$ESP/vmlinuz" ]; then
+    cp -f "$ESP/vmlinuz"   "$ESP/vmlinuz.old"
+fi
+if [ -f "$ESP/initrd.img" ]; then
+    cp -f "$ESP/initrd.img" "$ESP/initrd.img.old"
+fi
+
+# Step 2: Install the new pair.
+cp -f "/boot/vmlinuz-${KERNEL_VERSION}"    "$ESP/vmlinuz"
+cp -f "/boot/initrd.img-${KERNEL_VERSION}" "$ESP/initrd.img"
+
+echo "Limine: ESP updated. Previous kernel saved as vmlinuz.old/initrd.img.old."
+
+===== Initramfs archive filenames (not file contents) =====
+
+Archive: /boot/efi/initrd.img
+cryptroot/crypttab
+etc/luks-incus-keyfile
+
+Archive: /boot/efi/initrd.img.old
+cryptroot/crypttab
+etc/luks-incus-keyfile
+
+Archive: /boot/initrd.img-7.0.0-38-generic
+cryptroot/crypttab
+etc/luks-incus-keyfile
+
+Archive: /boot/initrd.img-7.0.0-42-generic
+cryptroot/crypttab
+etc/luks-incus-keyfile
+
+===== Relevant packages and services =====
+
+$ dpkg-query -W -f=\$\{binary:Package\}\\t\$\{Version\}\\t\$\{db:Status-Abbrev\}\\n incus\* podman\* docker\* \*rocm\* \*hip\* linux-image\* linux-headers\*
+amdrocm-amdsmi7.14	7.14.1-0	ii
+amdrocm-base7.14	7.14.1-0	ii
+amdrocm-blas-dev7.14	7.14.1-0	ii
+amdrocm-blas-host7.14	7.14.1-0	ii
+amdrocm-blas7.14-gfx1151	7.14.1-0	ii
+amdrocm-ccl-dev7.14	7.14.1-0	ii
+amdrocm-ck7.14	7.14.1-0	ii
+amdrocm-core-dev7.14-gfx1151	7.14.1-0	ii
+amdrocm-core-sdk7.14-gfx1151	7.14.1-0	ii
+amdrocm-core7.14-gfx1151	7.14.1-0	ii
+amdrocm-debugger7.14	7.14.1-0	ii
+amdrocm-decode-dev7.14	7.14.1-0	ii
+amdrocm-decode7.14	7.14.1-0	ii
+amdrocm-developer-tools7.14	7.14.1-0	ii
+amdrocm-dnn-dev7.14	7.14.1-0	ii
+amdrocm-dnn-host7.14	7.14.1-0	ii
+amdrocm-dnn7.14-gfx1151	7.14.1-0	ii
+amdrocm-emulation7.14	7.14.1-0	ii
+amdrocm-fft-dev7.14	7.14.1-0	ii
+amdrocm-fft-host7.14	7.14.1-0	ii
+amdrocm-fft7.14-gfx1151	7.14.1-0	ii
+amdrocm-hipblas-common-dev7.14	7.14.1-0	ii
+amdrocm-hipfile-dev7.14	7.14.1-0	ii
+amdrocm-hipfile7.14	7.14.1-0	ii
+amdrocm-hipify7.14	7.14.1-0	ii
+amdrocm-jpeg-dev7.14	7.14.1-0	ii
+amdrocm-jpeg7.14	7.14.1-0	ii
+amdrocm-llvm-dev7.14	7.14.1-0	ii
+amdrocm-llvm7.14	7.14.1-0	ii
+amdrocm-math-common7.14	7.14.1-0	ii
+amdrocm-opencl-dev7.14	7.14.1-0	ii
+amdrocm-opencl7.14	7.14.1-0	ii
+amdrocm-profiler-base7.14	7.14.1-0	ii
+amdrocm-profiler7.14	7.14.1-0	ii
+amdrocm-rand-dev7.14	7.14.1-0	ii
+amdrocm-rand-host7.14	7.14.1-0	ii
+amdrocm-rand7.14-gfx1151	7.14.1-0	ii
+amdrocm-rccl-dev7.14	7.14.1-0	ii
+amdrocm-rccl-host7.14	7.14.1-0	ii
+amdrocm-rccl7.14-gfx1151	7.14.1-0	ii
+amdrocm-rdc7.14	7.14.1-0	ii
+amdrocm-rocshmem-dev7.14	7.14.1-0	ii
+amdrocm-rocshmem7.14	7.14.1-0	ii
+amdrocm-runtime-dev7.14	7.14.1-0	ii
+amdrocm-runtime7.14	7.14.1-0	ii
+amdrocm-solver-dev7.14	7.14.1-0	ii
+amdrocm-solver-host7.14	7.14.1-0	ii
+amdrocm-solver7.14-gfx1151	7.14.1-0	ii
+amdrocm-sparse-dev7.14	7.14.1-0	ii
+amdrocm-sparse-host7.14	7.14.1-0	ii
+amdrocm-sparse7.14-gfx1151	7.14.1-0	ii
+amdrocm-sysdeps7.14	7.14.1-0	ii
+amdrocm7.14-gfx1151	7.14.1-0	ii
+docker-compose		un
+incus	1:7.5.1-ubuntu24.04-202609271822	ii
+incus-base	1:7.5.1-ubuntu24.04-202609271822	ii
+incus-client	1:7.5.1-ubuntu24.04-202609271822	ii
+incus-tools		un
+incus-ui-canonical	1:7.5.1-ubuntu24.04-202609271822	ii
+libamdhip64-5		un
+libhiprtc-builtins5		un
+linux-headers		un
+linux-headers-3.0		un
+linux-headers-6.17.0-1012-oem		un
+linux-headers-6.17.0-1017-oem		un
+linux-headers-6.17.0-1020-oem		un
+linux-headers-6.17.0-1023-oem		un
+linux-headers-6.17.0-1025-oem		un
+linux-headers-6.17.0-1028-oem		un
+linux-headers-6.17.0-1032-oem	6.17.0-1032.32	ii
+linux-headers-686-pae		un
+linux-headers-7.0.0-34-generic		un
+linux-headers-7.0.0-38	7.0.0-38.38	ii
+linux-headers-7.0.0-38-generic	7.0.0-38.38	ii
+linux-headers-7.0.0-42	7.0.0-42.42	ii
+linux-headers-7.0.0-42-generic	7.0.0-42.42	ii
+linux-headers-amd64		un
+linux-headers-generic	7.0.0-42.42	ii
+linux-headers-generic-hwe-26.04	7.0.0-42.42	ii
+linux-image		un
+linux-image-6.17.0-1012-oem	6.17.0-1012.12	rc
+linux-image-6.17.0-1017-oem	6.17.0-1017.17	rc
+linux-image-6.17.0-1020-oem	6.17.0-1020.20	rc
+linux-image-6.17.0-1023-oem	6.17.0-1023.23	rc
+linux-image-6.17.0-1025-oem	6.17.0-1025.25	rc
+linux-image-6.17.0-1028-oem	6.17.0-1028.28	rc
+linux-image-6.17.0-1032-oem	6.17.0-1032.32	rc
+linux-image-7.0.0-34-generic	7.0.0-34.34	rc
+linux-image-7.0.0-38-generic	7.0.0-38.38	ii
+linux-image-7.0.0-42-generic	7.0.0-42.42	ii
+linux-image-fb-generic		un
+linux-image-fb-generic-hwe-26.04		un
+linux-image-generic	7.0.0-42.42	ii
+linux-image-generic-hwe-26.04	7.0.0-42.42	ii
+linux-image-unsigned-6.17.0-1012-oem		un
+linux-image-unsigned-6.17.0-1017-oem		un
+linux-image-unsigned-6.17.0-1020-oem		un
+linux-image-unsigned-6.17.0-1023-oem		un
+linux-image-unsigned-6.17.0-1025-oem		un
+linux-image-unsigned-6.17.0-1028-oem		un
+linux-image-unsigned-6.17.0-1032-oem		un
+linux-image-unsigned-7.0.0-34-generic		un
+linux-image-unsigned-7.0.0-38-generic		un
+linux-image-unsigned-7.0.0-42-generic		un
+podman	5.7.0+ds2-3build1	ii
+whiptail	0.52.25-1ubuntu3	ii
+whiptail-utf8		un
+
+$ systemctl list-unit-files incus\* ollama\* podman\* docker\*
+UNIT FILE                      STATE    PRESET
+incus-lxcfs.service            enabled  enabled
+incus-startup.service          enabled  enabled
+incus-user.service             indirect enabled
+incus.service                  indirect enabled
+podman-auto-update.service     enabled  enabled
+podman-clean-transient.service enabled  enabled
+podman-kube@.service           disabled enabled
+podman-restart.service         enabled  enabled
+podman.service                 enabled  enabled
+incus-user.socket              enabled  enabled
+incus.socket                   enabled  enabled
+podman.socket                  enabled  enabled
+podman-auto-update.timer       enabled  enabled
+
+13 unit files listed.
+
+$ systemctl --no-pager --full status incus.service ollama.service
+Unit ollama.service could not be found.
+* incus.service - Incus - Daemon
+     Loaded: loaded (/usr/lib/systemd/system/incus.service; indirect; preset: enabled)
+     Active: active (running) since Wed 2026-10-28 REDACTED_IPV6 GMT; 12h ago
+ Invocation: REDACTED_HEX_ID
+TriggeredBy: * incus.socket
+   Main PID: 7011 (incusd)
+      Tasks: 35
+     Memory: 201.8M (peak: 247.8M)
+        CPU: 6.774s
+     CGroup: /system.slice/incus.service
+             |-7011 incusd --group incus-admin --logfile /var/log/incus/incusd.log
+             `-8474 dnsmasq --keep-in-foreground --strict-order --bind-interfaces --except-interface=lo --pid-file= --no-ping --interface=incusbr0 --dhcp-rapid-commit --no-negcache --quiet-dhcp --quiet-dhcp6 --quiet-ra --listen-address=REDACTED_IPV4 --dhcp-no-override --dhcp-authoritative --dhcp-leasefile=/var/lib/incus/networks/incusbr0/dnsmasq.leases --dhcp-hostsfile=/var/lib/incus/networks/incusbr0/dnsmasq.hosts --dhcp-range REDACTED_IPV4,REDACTED_IPV4,1h --listen-address=REDACTED_IPV6 --enable-ra --dhcp-range REDACTED_IPV6,constructor:incusbr0,ra-stateless,ra-names "--dhcp-option-force=option6:dns-server,[REDACTED_IPV6]" -s incus --interface-name _gateway.incus,incusbr0 -S /incus/ --conf-file=/var/lib/incus/networks/incusbr0/dnsmasq.raw -u incus -g incus
+
+Oct 28 REDACTED_IPV6 WORKSTATION dnsmasq-dhcp[8474]: IPv6 router advertisement enabled
+Oct 28 REDACTED_IPV6 WORKSTATION dnsmasq-dhcp[8474]: DHCP, sockets bound exclusively to interface incusbr0
+Oct 28 REDACTED_IPV6 WORKSTATION dnsmasq[8474]: using only locally-known addresses for incus
+Oct 28 REDACTED_IPV6 WORKSTATION dnsmasq[8474]: reading /etc/resolv.conf
+Oct 28 REDACTED_IPV6 WORKSTATION dnsmasq[8474]: using nameserver REDACTED_IPV4#53
+Oct 28 REDACTED_IPV6 WORKSTATION dnsmasq[8474]: using only locally-known addresses for incus
+Oct 28 REDACTED_IPV6 WORKSTATION dnsmasq[8474]: read /etc/hosts - 7 names
+Oct 28 REDACTED_IPV6 WORKSTATION dnsmasq-dhcp[8474]: read /var/lib/incus/networks/incusbr0/dnsmasq.hosts/rocm.eth0
+Oct 28 REDACTED_IPV6 WORKSTATION systemd[1]: Started incus.service - Incus - Daemon.
+Oct 28 REDACTED_IPV6 WORKSTATION dnsmasq-dhcp[8474]: router advertisement on REDACTED_IPV6, old prefix for incusbr0
+[exit status 4]
+
+$ ls -l /dev/kfd /dev/dri
+crw-rw----+ 1 root render 510, 0 Oct 28 12:37 /dev/kfd
+
+/dev/dri:
+total 0
+drwxr-xr-x  2 root root         80 Oct 28 12:37 by-path
+crw-rw----+ 1 root video  226,   1 Oct 28 12:37 card1
+crw-rw----+ 1 root render 226, 128 Oct 28 12:37 renderD128
+
+$ lsmod
+Module                  Size  Used by
+cpuid                  12288  0
+wireguard             114688  0
+libcurve25519          65536  1 wireguard
+ip6_udp_tunnel         16384  1 wireguard
+udp_tunnel             36864  1 wireguard
+nft_masq               12288  2
+bridge                425984  0
+stp                    12288  1 bridge
+llc                    16384  2 bridge,stp
+vhost_vsock            28672  0
+vmw_vsock_virtio_transport_common    61440  1 vhost_vsock
+vhost                  69632  1 vhost_vsock
+vhost_iotlb            16384  1 vhost
+vsock                  73728  4 vmw_vsock_virtio_transport_common,vhost_vsock
+ccm                    20480  6
+rfcomm                110592  4
+snd_seq_dummy          12288  0
+snd_hrtimer            12288  1
+nft_fib_inet           12288  1
+nft_fib_ipv4           12288  1 nft_fib_inet
+nft_fib_ipv6           12288  1 nft_fib_inet
+nft_fib                12288  3 nft_fib_ipv6,nft_fib_ipv4,nft_fib_inet
+nft_reject_inet        12288  12
+nf_reject_ipv4         12288  1 nft_reject_inet
+nf_reject_ipv6         24576  1 nft_reject_inet
+nft_reject             12288  1 nft_reject_inet
+nft_ct                 28672  8
+nft_chain_nat          12288  4
+nf_nat                 61440  2 nft_masq,nft_chain_nat
+nf_conntrack          196608  3 nf_nat,nft_ct,nft_masq
+nf_defrag_ipv6         24576  1 nf_conntrack
+nf_defrag_ipv4         12288  1 nf_conntrack
+nf_tables             401408  442 nft_ct,nft_reject_inet,nft_fib_ipv6,nft_fib_ipv4,nft_masq,nft_chain_nat,nft_reject,nft_fib,nft_fib_inet
+nfnetlink              20480  2 nf_tables
+overlay               233472  0
+cmac                   12288  3
+algif_hash             20480  1
+algif_skcipher         12288  1
+af_alg                 32768  6 algif_hash,algif_skcipher
+bnep                   32768  2
+binfmt_misc            24576  1
+amd_atl                77824  1
+intel_rapl_msr         20480  0
+nls_iso8859_1          12288  1
+intel_rapl_common      57344  1 intel_rapl_msr
+amdgpu              21585920  45
+edac_mce_amd           28672  0
+snd_acp70              12288  0
+snd_acp_i2s            16384  1 snd_acp70
+snd_acp_pdm            12288  1 snd_acp70
+snd_acp_pcm            12288  1 snd_acp70
+snd_sof_amd_acp70      16384  0
+snd_sof_amd_acp63      16384  0
+snd_sof_amd_vangogh    16384  0
+snd_sof_amd_rembrandt    16384  0
+snd_sof_amd_renoir     16384  0
+snd_sof_amd_acp        65536  5 snd_sof_amd_acp70,snd_sof_amd_rembrandt,snd_sof_amd_vangogh,snd_sof_amd_acp63,snd_sof_amd_renoir
+snd_sof_pci            24576  5 snd_sof_amd_acp70,snd_sof_amd_rembrandt,snd_sof_amd_vangogh,snd_sof_amd_acp63,snd_sof_amd_renoir
+snd_sof_xtensa_dsp     12288  1 snd_sof_amd_acp
+snd_sof               438272  2 snd_sof_amd_acp,snd_sof_pci
+snd_sof_utils          16384  1 snd_sof
+snd_pci_ps             32768  0
+snd_hda_codec_alc662    20480  1
+snd_soc_acpi_amd_match    28672  3 snd_sof_amd_acp70,snd_sof_amd_acp63,snd_pci_ps
+snd_hda_codec_realtek_lib    65536  1 snd_hda_codec_alc662
+snd_amd_sdw_acpi       16384  2 snd_sof_amd_acp,snd_pci_ps
+soundwire_amd          49152  2 snd_sof_amd_acp,snd_pci_ps
+snd_hda_codec_generic   126976  2 snd_hda_codec_alc662,snd_hda_codec_realtek_lib
+snd_hda_codec_atihdmi    24576  1
+soundwire_generic_allocation    24576  1 soundwire_amd
+snd_hda_codec_hdmi     65536  1 snd_hda_codec_atihdmi
+soundwire_bus        1183744  2 soundwire_generic_allocation,soundwire_amd
+snd_soc_sdca          126976  2 snd_soc_acpi_amd_match,soundwire_bus
+kvm_amd               262144  0
+btusb                  81920  0
+snd_hda_intel          65536  2
+mt7925e                24576  0
+snd_soc_core          446464  4 snd_sof,snd_soc_sdca,snd_acp_pcm,soundwire_amd
+snd_hda_codec         212992  6 snd_hda_codec_generic,snd_hda_codec_hdmi,snd_hda_intel,snd_hda_codec_alc662,snd_hda_codec_realtek_lib,snd_hda_codec_atihdmi
+btmtk                  36864  1 btusb
+snd_usb_audio         622592  2
+mt7925_common         163840  1 mt7925e
+btrtl                  36864  1 btusb
+snd_compress           40960  1 snd_soc_core
+snd_hda_core          151552  7 snd_hda_codec_generic,snd_hda_codec_hdmi,snd_hda_intel,snd_hda_codec_alc662,snd_hda_codec,snd_hda_codec_realtek_lib,snd_hda_codec_atihdmi
+btbcm                  24576  1 btusb
+ac97_bus               12288  1 snd_soc_core
+kvm                  1527808  1 kvm_amd
+mt792x_lib             73728  2 mt7925e,mt7925_common
+uvcvideo              147456  1
+snd_usbmidi_lib        57344  1 snd_usb_audio
+snd_intel_dspcfg       45056  2 snd_hda_intel,snd_sof
+snd_pcm_dmaengine      20480  1 snd_soc_core
+btintel                73728  1 btusb
+snd_intel_sdw_acpi     16384  1 snd_intel_dspcfg
+snd_rpl_pci_acp6x      16384  0
+snd_hwdep              24576  2 snd_usb_audio,snd_hda_codec
+videobuf2_vmalloc      20480  1 uvcvideo
+mt76_connac_lib       110592  3 mt792x_lib,mt7925e,mt7925_common
+snd_ump                49152  1 snd_usb_audio
+snd_acp_pci            12288  0
+uvc                    12288  1 uvcvideo
+amdxcp                 12288  1 amdgpu
+snd_seq_midi           24576  0
+snd_amd_acpi_mach      12288  1 snd_acp_pci
+videobuf2_memops       16384  1 videobuf2_vmalloc
+drm_panel_backlight_quirks    12288  1 amdgpu
+mt76                  167936  4 mt792x_lib,mt7925e,mt76_connac_lib,mt7925_common
+snd_seq_midi_event     16384  1 snd_seq_midi
+snd_acp_legacy_common    28672  2 snd_acp70,snd_acp_pci
+drm_buddy              28672  1 amdgpu
+videobuf2_v4l2         36864  1 uvcvideo
+irqbypass              16384  1 kvm
+amdxdna               184320  0
+drm_ttm_helper         20480  2 amdgpu
+snd_rawmidi            57344  3 snd_seq_midi,snd_usbmidi_lib,snd_ump
+snd_pci_acp6x          16384  0
+videobuf2_common       90112  4 videobuf2_vmalloc,videobuf2_v4l2,uvcvideo,videobuf2_memops
+rapl                   20480  0
+ttm                   139264  2 amdgpu,drm_ttm_helper
+mac80211             1937408  4 mt792x_lib,mt76,mt76_connac_lib,mt7925_common
+snd_seq               126976  9 snd_seq_midi,snd_seq_midi_event,snd_seq_dummy
+amd_pmf               131072  1 amdxdna
+snd_pcm               208896  17 snd_sof_amd_acp,snd_hda_codec_hdmi,snd_pci_acp6x,snd_acp_legacy_common,snd_hda_intel,snd_usb_audio,snd_hda_codec,snd_sof,snd_soc_sdca,snd_compress,snd_soc_core,snd_acp_pcm,snd_sof_utils,soundwire_amd,snd_hda_core,snd_pci_ps,snd_pcm_dmaengine
+drm_exec               12288  1 amdgpu
+videodev              376832  2 videobuf2_v4l2,uvcvideo
+bluetooth            1134592  34 btrtl,btmtk,btintel,btbcm,bnep,btusb,rfcomm
+snd_pci_acp5x          16384  0
+amdtee                 32768  0
+i2c_piix4              36864  0
+snd_seq_device         16384  4 snd_seq,snd_seq_midi,snd_ump,snd_rawmidi
+drm_suballoc_helper    24576  1 amdgpu
+snd_rn_pci_acp3x       16384  0
+wmi_bmof               12288  0
+drm_display_helper    307200  1 amdgpu
+amd_sfh                73728  1 amd_pmf
+mc                     90112  6 videodev,snd_usb_audio,videobuf2_v4l2,uvcvideo,videobuf2_common
+input_leds             12288  0
+k10temp                16384  0
+i2c_smbus              20480  1 i2c_piix4
+snd_timer              53248  3 snd_seq,snd_hrtimer,snd_pcm
+snd_acp_config         24576  10 snd_rn_pci_acp3x,snd_sof_amd_acp70,snd_pci_acp6x,snd_pci_acp5x,snd_sof_amd_rembrandt,snd_sof_amd_vangogh,snd_sof_amd_acp63,snd_acp_pci,snd_pci_ps,snd_sof_amd_renoir
+cec                   106496  2 drm_display_helper,amdgpu
+tee                    61440  2 amd_pmf,amdtee
+cfg80211             1548288  4 mt76,mac80211,mt76_connac_lib,mt7925_common
+snd                   147456  28 snd_hda_codec_generic,snd_seq,snd_seq_device,snd_hda_codec_hdmi,snd_hwdep,snd_hda_intel,snd_usb_audio,snd_usbmidi_lib,snd_hda_codec,snd_sof,snd_soc_sdca,snd_timer,snd_hda_codec_realtek_lib,snd_compress,snd_soc_core,snd_ump,snd_pcm,snd_rawmidi
+rc_core                81920  1 cec
+snd_soc_acpi           16384  5 snd_sof_amd_acp,snd_acp_legacy_common,snd_acp_config,snd_amd_acpi_mach,snd_pci_ps
+gpu_sched              69632  2 amdxdna,amdgpu
+joydev                 32768  0
+snd_pci_acp3x          16384  0
+platform_profile       20480  1 amd_pmf
+soundcore              16384  1 snd
+i2c_algo_bit           16384  1 amdgpu
+ccp                   192512  2 kvm_amd,amdtee
+libarc4                12288  1 mac80211
+amd_pmc                53248  0
+mac_hid                12288  0
+sch_fq_codel           28672  3
+efi_pstore             12288  0
+dmi_sysfs              28672  0
+autofs4                61440  2
+btrfs                2314240  2
+libblake2b             20480  1 btrfs
+xor                    24576  1 btrfs
+raid6_pq              126976  1 btrfs
+dm_crypt               73728  2
+hid_logitech_hidpp     73728  0
+hid_logitech_dj        40960  0
+hid_generic            12288  0
+usbhid                 86016  2 hid_logitech_dj,hid_logitech_hidpp
+psmouse               225280  0
+nvme                   69632  3
+serio_raw              20480  0
+ghash_clmulni_intel    12288  0
+r8169                 151552  0
+i2c_hid_acpi           12288  0
+sdhci_pci             106496  0
+i2c_hid                40960  1 i2c_hid_acpi
+nvme_core             241664  4 nvme
+sdhci_uhs2             40960  1 sdhci_pci
+hid                   282624  7 i2c_hid,usbhid,snd_soc_sdca,hid_generic,amd_sfh,hid_logitech_dj,hid_logitech_hidpp
+nvme_keyring           20480  1 nvme_core
+thunderbolt           569344  0
+sdhci                 106496  2 sdhci_uhs2,sdhci_pci
+nvme_auth              28672  1 nvme_core
+video                  77824  1 amdgpu
+realtek                57344  2
+hkdf                   12288  1 nvme_auth
+cqhci                  40960  1 sdhci_pci
+wmi                    36864  2 video,wmi_bmof
+aesni_intel            98304  5
+
+===== Incus inspection =====
+
+$ timeout 20 incus version
+Client version: 7.5.1
+Server version: 7.5.1
+
+$ timeout 20 incus list --all-projects
+┌─────────┬──────┬─────────┬──────┬──────┬───────────┬───────────┐
+│ PROJECT │ NAME │  STATE  │ IPV4 │ IPV6 │   TYPE    │ SNAPSHOTS │
+├─────────┼──────┼─────────┼──────┼──────┼───────────┼───────────┤
+│ default │ rocm │ STOPPED │      │      │ CONTAINER │ 0         │
+└─────────┴──────┴─────────┴──────┴──────┴───────────┴───────────┘
+
+$ timeout 20 incus project list
+┌───────────────────┬────────┬──────────┬─────────────────┬─────────────────┬──────────┬───────────────┬───────────────────────┬─────────┐
+│       NAME        │ IMAGES │ PROFILES │ STORAGE VOLUMES │ STORAGE BUCKETS │ NETWORKS │ NETWORK ZONES │      DESCRIPTION      │ USED BY │
+├───────────────────┼────────┼──────────┼─────────────────┼─────────────────┼──────────┼───────────────┼───────────────────────┼─────────┤
+│ default (current) │ YES    │ YES      │ YES             │ YES             │ YES      │ YES           │ Default Incus project │ 4       │
+└───────────────────┴────────┴──────────┴─────────────────┴─────────────────┴──────────┴───────────────┴───────────────────────┴─────────┘
+
+$ timeout 20 incus storage list
+┌────────────┬────────┬─────────────┬─────────┬─────────┐
+│    NAME    │ DRIVER │ DESCRIPTION │ USED BY │  STATE  │
+├────────────┼────────┼─────────────┼─────────┼─────────┤
+│ incus-pool │ btrfs  │             │ 3       │ CREATED │
+└────────────┴────────┴─────────────┴─────────┴─────────┘
+
+$ timeout 20 incus network list
+┌──────────┬──────────┬─────────┬───────────────┬───────────────────────────┬─────────────┬─────────┬─────────┐
+│   NAME   │   TYPE   │ MANAGED │     IPV4      │           IPV6            │ DESCRIPTION │ USED BY │  STATE  │
+├──────────┼──────────┼─────────┼───────────────┼───────────────────────────┼─────────────┼─────────┼─────────┤
+│ enp193s0 │ physical │ NO      │               │                           │             │ 0       │         │
+├──────────┼──────────┼─────────┼───────────────┼───────────────────────────┼─────────────┼─────────┼─────────┤
+│ enp198s0 │ physical │ NO      │               │                           │             │ 0       │         │
+├──────────┼──────────┼─────────┼───────────────┼───────────────────────────┼─────────────┼─────────┼─────────┤
+│ incusbr0 │ bridge   │ YES     │ REDACTED_IPV4/24 │ REDACTED_IPV6/64 │             │ 3       │ CREATED │
+├──────────┼──────────┼─────────┼───────────────┼───────────────────────────┼─────────────┼─────────┼─────────┤
+│ lo       │ loopback │ NO      │               │                           │             │ 0       │         │
+├──────────┼──────────┼─────────┼───────────────┼───────────────────────────┼─────────────┼─────────┼─────────┤
+│ wlp195s0 │ physical │ NO      │               │                           │             │ 0       │         │
+└──────────┴──────────┴─────────┴───────────────┴───────────────────────────┴─────────────┴─────────┴─────────┘
+
+Custom storage volumes and project-specific resources need a follow-up inventory.
+
+===== End of report =====
+Inspection complete. No migration performed.
