@@ -159,6 +159,7 @@ done
 systemctl is-active --quiet incus.service || die 'Incus must be running for dependency checks.'
 # Never inherit a CLI default remote or selected project.
 incus_local=(incus --force-local --project default)
+incus_all_projects=(incus --force-local)
 "${incus_local[@]}" project list --format json | python3 -c '
 import json,sys
 x=json.load(sys.stdin)
@@ -174,7 +175,7 @@ mapped=$(cryptsetup status cryptincus | awk '$1=="device:" {print $2}')
 [[ $(readlink -f "$mapped") == "$(readlink -f "$DATA_PART")" ]] || die 'cryptincus maps an unexpected device.'
 [[ $(findmnt -nro UUID /var/lib/incus/storage-pools/incus-pool) == REPLACE_UUID_05 ]] || die 'Unexpected mounted pool filesystem.'
 "${incus_local[@]}" storage get incus-pool source | grep -Fx REPLACE_UUID_05 >/dev/null || die 'Incus pool source changed.'
-"${incus_local[@]}" list --all-projects --format json | python3 -c '
+"${incus_all_projects[@]}" list --all-projects --format json | python3 -c '
 import json,sys
 x=json.load(sys.stdin)
 assert len(x)==1 and x[0]["name"]=="rocm" and x[0]["status"]=="Stopped" and x[0].get("project","default")=="default", "Unexpected instances"

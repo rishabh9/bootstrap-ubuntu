@@ -116,3 +116,17 @@ Limine, and the outdated repository. Assistant replies were reference placeholde
 The user's full architecture request and subsequent reports supplied the concrete
 requirements and evidence. This handover summarizes the current chat's material
 decisions and findings; it does not claim to reproduce unavailable assistant turns.
+
+## Subsequent execution checkpoint — 1 November 2026
+
+This update supersedes earlier pending-approval statements above. The user approved
+boot cleanup, ran it successfully, and rebooted into 7.0.0-42-generic. Root and ESP
+mounts were correct; networking, DNS and Lemonade inference were confirmed working.
+The user then explicitly approved the P510 data-migration stage.
+
+The first data-stage attempt stopped during preflight: Incus rejects combining
+`--project default` with `--all-projects`. It failed before the confirmation,
+`data-started` marker, deletion or formatting. The fix uses a separate local-only
+CLI array for all-project inventory and retains local/default scoping for the
+other commands. A regression test reproduced the failure before the fix; all five
+CLI tests now pass. The corrected destructive stage has not yet been retried.
